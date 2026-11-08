@@ -188,7 +188,7 @@ CHORDS = [  # (início, fim, baixo, notas do pad)
 
 IMPACTS = [(0.0, 0.8), (1.0, 1.0), (12.0, 1.15), (19.0, 0.9)]
 WHOOSHES = [(1.62, False), (5.62, False), (7.7, False), (14.7, False)]
-WORD_HITS = [10.0, 10.5, 11.0, 11.5, 11.75]
+WORD_HITS = [10.0, 10.5, 11.0, 11.5]
 
 
 def extract_audio(path, start, dur):

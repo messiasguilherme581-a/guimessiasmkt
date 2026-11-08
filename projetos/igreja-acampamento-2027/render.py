@@ -22,7 +22,7 @@ from functools import lru_cache
 from multiprocessing import Pool
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 import trilha
 
@@ -51,22 +51,24 @@ ORANGE = (255, 96, 28)  # "fogueira"
 T = {
     "hud_l": "ACAMPAMENTO 2027",
     "hud_r": "INSCRIÇÕES ABERTAS",
-    "open1": "ACAMPAMENTO",
-    "open2": "2027",
+    "kicker": "avisa a galera:",
+    "open1": "O ACAMPA",
+    "open2": "VOLTOU",
     "tem": "tem",
     "gincana": "GINCANA",
     "resenha": "RESENHA",
     "adoracao": "ADORAÇÃO",
-    "e_tem": "e tem",
+    "e_tem": "e o principal:",
     "deus": "DEUS",
     "no_meio": "NO MEIO",
-    "build": ["VOCÊ", "VAI", "FICAR", "DE", "FORA?"],
+    "build": ["SÓ", "FALTA", "VOCÊ", "VOCÊ"],
     "insc": "INSCRIÇÕES",
     "abertas": "ABERTAS",
     "label": "ACAMPAMENTO 2027",
-    "garanta": "GARANTA",
+    "garanta": "GARANTE",
     "sua_vaga": "SUA VAGA",
-    "cta_sub": "Fale com a liderança da igreja",
+    "cta_sub": "Inscrições com a liderança da igreja",
+    "cta_tag": "e marca quem vai com você",
 }
 
 
@@ -125,14 +127,24 @@ def grade(arr: np.ndarray, kind: str) -> np.ndarray:
 
 
 # ------------------------------------------------------------------ fontes de imagem
+RESTORE = {  # remove a compressão do WhatsApp, amplia com Lanczos e devolve nitidez (CAS)
+    "gincana": "fps=60,hqdn3d=1.5:1.5:3:3,nlmeans=s=3.5:p=7:r=13,scale=iw*2:ih*2:flags=lanczos,cas=strength=0.6",
+    "adoracao": "fps=24,nlmeans=s=2.2:p=7:r=11,scale=1080:1920:flags=lanczos,cas=strength=0.5",
+}
+
+
 def extract_frames():
-    for name, fps in (("gincana", 60), ("adoracao", 24)):
-        d = os.path.join(CACHE, name)
+    for name, vf in RESTORE.items():
+        d = os.path.join(CACHE, name + "_hd")
         if os.path.isdir(d) and len(os.listdir(d)) > 50:
             continue
         os.makedirs(d, exist_ok=True)
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", A(f"{name}.mp4"), "-vf", f"fps={fps}",
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", A(f"{name}.mp4"), "-vf", vf,
                         "-q:v", "1", os.path.join(d, "%04d.jpg")], check=True)
+    ph = os.path.join(CACHE, "chacara_hd.png")
+    if not os.path.exists(ph):
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", A("chacara.jpg"), "-vf",
+                        "nlmeans=s=3:p=7:r=13,scale=iw*2:ih*2:flags=lanczos,cas=strength=0.55", ph], check=True)
 
 
 SRC_FPS = {"gincana": 60, "adoracao": 24}
@@ -140,7 +152,7 @@ SRC_FPS = {"gincana": 60, "adoracao": 24}
 
 @lru_cache(maxsize=64)
 def frame_arr(name, idx):
-    d = os.path.join(CACHE, name)
+    d = os.path.join(CACHE, name + "_hd")
     n = len(os.listdir(d))
     idx = int(clamp(idx, 0, n - 1))
     return grade(np.asarray(Image.open(os.path.join(d, f"{idx + 1:04d}.jpg")).convert("RGB")), name)
@@ -148,7 +160,7 @@ def frame_arr(name, idx):
 
 @lru_cache(maxsize=1)
 def photo_arr():
-    return grade(np.asarray(Image.open(A("chacara.jpg")).convert("RGB")), "chacara")
+    return grade(np.asarray(Image.open(os.path.join(CACHE, "chacara_hd.png")).convert("RGB")), "chacara")
 
 
 def src_image(name, ts, blend=False):
@@ -176,7 +188,7 @@ def view(img: Image.Image, ow, oh, z=1.0, fx=0.5, fy=0.5, sharpen=True):
     s = vw / ow
     out = img.transform((ow, oh), Image.AFFINE, (s, 0, cx - vw / 2, 0, s, cy - vh / 2), resample=Image.BICUBIC)
     if sharpen:
-        out = out.filter(ImageFilter.UnsharpMask(radius=1.6, percent=55, threshold=2))
+        out = out.filter(ImageFilter.UnsharpMask(radius=1.4, percent=28, threshold=3))
     return out
 
 
@@ -332,7 +344,7 @@ def _leak():
 LEAK = _leak()
 LEAKS = [(5.9, 0.9), (11.95, 1.0)]  # (início, duração)
 FLASHES = [(0.0, 0.8), (1.0, 0.9), (2.0, 0.35), (4.0, 0.3), (8.0, 0.3), (12.0, 1.0), (15.0, 0.35), (19.0, 0.45)]
-HITS = [(1.0, 1.0), (11.75, 0.8), (12.0, 1.3), (19.0, 0.7)]  # tremor + aberração cromática
+HITS = [(1.0, 1.0), (11.5, 0.8), (12.0, 1.3), (19.0, 0.7)]  # tremor + aberração cromática
 
 
 def hit_k(t):
@@ -413,22 +425,31 @@ def hud(frame, t):
 def compose(t: float) -> Image.Image:
     frame = Image.new("RGBA", (W, H), INK + (255,))
 
-    # ---------------- 0–2 s · abertura: ACAMPAMENTO / 2027 (2027 vazado com a adoração)
+    # ---------------- 0–2 s · gancho: avisa a galera: O ACAMPA / VOLTOU (vazado com a adoração)
     if t < 2.0:
-        s1 = fit(T["open1"], F_ANTON, 1000, 300)
+        s1 = fit(T["open1"], F_ANTON, 1000, 330)
         s2 = fit(T["open2"], F_ANTON, 1010, 700)
         c1, c2 = cap_h(F_ANTON, s1), cap_h(F_ANTON, s2)
-        base1 = 960 - (c1 + 40 + c2) / 2 + c1
+        base1 = 960 - (c1 + 40 + c2) / 2 + c1 + 50
         slam(frame, spr(T["open1"], F_ANTON, s1, WHITE), W / 2, base1, t, 0.0, 1.22)
+        w1 = text_w(T["open1"], F_ANTON, s1)
+        pk = e_out_cubic(prog(t, 0.14, 0.3))
+        put(frame, spr(T["kicker"], F_SERIF, 112, ORANGE), W / 2 - w1 / 2 + 4,
+            base1 - c1 - 18 + (1 - pk) * 20, 1, pk, center=False)
         if t >= 1.0:
             img, ox, oy = spr(T["open2"], F_ANTON, s2, WHITE)
             base = base1 + 40 + c2
             p = e_out_expo(prog(t, 1.0, 0.25))
             sc = lerp(1.25, 1.0, p)
             mask = img.getchannel("A")
-            fill = view(src_image("adoracao", 1.0 + (t - 1.0) * 0.8, True), img.width, img.height, 1.15, 0.5, 0.5, False)
+            fill = view(src_image("adoracao", 1.0 + (t - 1.0) * 0.8, True), img.width, img.height, 1.15, 0.5, 0.42, False)
+            fill = Image.fromarray(np.clip(np.asarray(fill).astype(np.float32) * 1.18 + 10, 0, 255).astype(np.uint8))
             fill = fill.convert("RGBA")
             fill.putalpha(mask)
+            # contorno fino branco: mantém a palavra legível mesmo com a imagem por dentro
+            ring = ImageChops.subtract(mask.filter(ImageFilter.MaxFilter(7)), mask)
+            fill.paste(Image.new("RGBA", fill.size, WHITE + (255,)), (0, 0), ring)
+            fill.putalpha(ImageChops.lighter(mask, ring))
             put(frame, (fill, ox, oy), W / 2, base, sc, e_out_cubic(prog(t, 1.0, 0.05)))
 
     # ---------------- 2–4 s · tem GINCANA (cabo de guerra)
@@ -479,10 +500,10 @@ def compose(t: float) -> Image.Image:
         put(frame, spr(T["e_tem"], F_SERIF, 118, ORANGE, 0.6), W / 2 - dw / 2 + 4,
             b1 - cap_h(F_ANTON, s1) - 16 + (1 - p) * 20, 1, p, center=False)
 
-    # ---------------- 10–12 s · subida: VOCÊ VAI FICAR DE FORA?
+    # ---------------- 10–12 s · subida: SÓ FALTA VOCÊ
     elif t < 12.0:
         words = T["build"]
-        starts = [10.0, 10.5, 11.0, 11.5, 11.75]
+        starts = [10.0, 10.5, 11.0, 11.5]
         i = max(k for k, s0 in enumerate(starts) if t >= s0)
         t0 = starts[i]
         z = punch(t, t0, 0.14, 0.35)
@@ -490,13 +511,14 @@ def compose(t: float) -> Image.Image:
             frame.paste(shot_adoracao_full(4.0 + (t - t0), z * 1.1, 0.5, shade=0.6), (0, 0))
         elif i == 1:
             band(frame, shot_gincana(2.3 + (t - t0), z * 1.15, 0.45))
-        elif i == 2:
-            frame.paste(shot_adoracao_full(10.6 + (t - t0), z * 1.2, 0.47, shade=0.6), (0, 0))
-        elif i == 3:
-            band(frame, view(src_image("chacara", 0), W, BAND_H, z * 1.25, 0.6, 0.35))
-        color = ORANGE if i == 4 else WHITE
+        elif i == 2:  # "VOCÊ" sobre o rapaz olhando pra câmera
+            band(frame, shot_gincana(4.02 + (t - t0) * 0.5, z * 1.25, 0.28, 0.42))
+        color = ORANGE if i == 3 else WHITE
         s = fit(words[i], F_ANTON, 980, 380)
         base = BAND_Y + cap_h(F_ANTON, s) / 2
+        if i == 2:  # texto abaixo da faixa: o rosto dele fica livre
+            s = 300
+            base = BB - 30 + cap_h(F_ANTON, s)
         slam(frame, spr(words[i], F_ANTON, s, color, 0.55), W / 2, base, t, t0, 1.3)
 
     # ---------------- 12–15 s · DROP: INSCRIÇÕES ABERTAS (chácara)
@@ -511,25 +533,29 @@ def compose(t: float) -> Image.Image:
         base2 = BB - 34 + cap_h(F_ANTON, s)
         slam(frame, spr(T["abertas"], F_ANTON, s, ORANGE), W / 2, base2, t, 12.5, 1.2)
 
-    # ---------------- 15–20 s · CTA: GARANTA SUA VAGA
+    # ---------------- 15–20 s · CTA: GARANTE SUA VAGA
     else:
         img = view(src_image("adoracao", 9.0 + (t - 15.0) * 0.75, True), W, BAND_H,
                    punch(t, 15.0, 0.08) * lerp(1.0, 1.08, prog(t, 15, 5)), 0.5, 0.47)
-        band(frame, img)
+        cy = 860  # bloco mais alto: fora da área da legenda do Reels
+        band(frame, img, cy=cy)
         s = fit(T["insc"], F_ANTON, 1000, 260)
-        reveal(frame, T["garanta"], F_ANTON, s, WHITE, W / 2, BT + 34, t, 15.02, 0.04)
-        base2 = BB - 34 + cap_h(F_ANTON, s)
+        reveal(frame, T["garanta"], F_ANTON, s, WHITE, W / 2, cy - BAND_H // 2 + 34, t, 15.02, 0.04)
+        base2 = cy + BAND_H // 2 - 34 + cap_h(F_ANTON, s)
         slam(frame, spr(T["sua_vaga"], F_ANTON, s, ORANGE), W / 2, base2, t, 15.5, 1.2)
         if t >= 16.0:
             p = e_out_cubic(prog(t, 16.0, 0.4))
-            sub = spr(T["cta_sub"], F_SMALL, 50, WHITE)
-            put(frame, sub, W / 2, base2 + 110 + (1 - p) * 16, 1, p * 0.92)
-            # seta animada
-            x = W / 2 + text_w(T["cta_sub"], F_SMALL, 50) / 2 + 26 + math.sin((t - 16) * 6) * 6
-            arr = spr("→", F_SMALL, 50, ORANGE)
-            put(frame, arr, x, base2 + 110 + (1 - p) * 16, 1, p, center=False)
+            sub = spr(T["cta_sub"], F_SMALL, 48, WHITE)
+            put(frame, sub, W / 2, base2 + 108 + (1 - p) * 16, 1, p * 0.92)
+        if t >= 17.0:
+            p = e_out_cubic(prog(t, 17.0, 0.4))
+            tag = spr(T["cta_tag"], F_SERIF, 76, ORANGE)
+            yb = base2 + 200 + (1 - p) * 16
+            put(frame, tag, W / 2 - 24, yb, 1, p)
+            x = W / 2 + text_w(T["cta_tag"], F_SERIF, 76) / 2 - 4
+            put(frame, spr("↓", F_SMALL, 56, ORANGE), x, yb - 4 + math.sin((t - 17) * 7) * 7, 1, p, center=False)
 
-    if not (11.75 <= t < 15.0):  # na revelação o selo "ACAMPAMENTO 2027" já está na tela
+    if not (11.5 <= t < 15.0):  # na revelação o selo "ACAMPAMENTO 2027" já está na tela
         hud(frame, t)
     return finish(frame, t)
 
@@ -589,6 +615,33 @@ def finish(frame: Image.Image, t: float) -> Image.Image:
     return Image.fromarray(out)
 
 
+# ------------------------------------------------------------------ capa (peça própria, não um quadro do vídeo)
+def make_cover() -> Image.Image:
+    """Capa 9:16 pensada para o recorte 3:4 da grade do perfil (miolo y 240–1680)."""
+    frame = Image.new("RGBA", (W, H), INK + (255,))
+    frame.paste(shot_adoracao_full(8.7, z=1.06, fy=0.5, blend=False, shade=1.0), (0, 0))
+    s1 = fit(T["open1"], F_ANTON, 960, 300)
+    s2 = fit(T["open2"], F_ANTON, 980, 520)
+    c1, c2 = cap_h(F_ANTON, s1), cap_h(F_ANTON, s2)
+    b1 = 760
+    b2 = b1 + 34 + c2
+    w1 = text_w(T["open1"], F_ANTON, s1)
+    put(frame, spr(T["kicker"], F_SERIF, 108, ORANGE, 0.7), W / 2 - w1 / 2 + 4, b1 - c1 - 18, center=False)
+    put(frame, spr(T["open1"], F_ANTON, s1, WHITE, 0.6), W / 2, b1)
+    put(frame, spr(T["open2"], F_ANTON, s2, ORANGE, 0.6), W / 2, b2)
+    # faixa de chamada
+    lab = T["hud_r"]
+    ls = 84
+    lw = text_w(lab, F_ANTON, ls, 3)
+    bw, bh = int(lw + 90), int(cap_h(F_ANTON, ls) + 64)
+    y0 = 1430
+    d = ImageDraw.Draw(frame)
+    d.rounded_rectangle((W / 2 - bw / 2, y0, W / 2 + bw / 2, y0 + bh), radius=14, fill=ORANGE + (255,))
+    put(frame, spr(lab, F_ANTON, ls, INK, 0.0, 3), W / 2, y0 + 32 + cap_h(F_ANTON, ls))
+    put(frame, spr(T["label"], F_LABEL, 34, WHITE, 0.5, 10), W / 2, y0 - 36)
+    return finish(frame, 99.0)
+
+
 # ------------------------------------------------------------------ main
 def _frame(i):
     return compose(i / FPS).tobytes()
@@ -606,8 +659,12 @@ def main():
     if args and args[0] == "--preview":
         os.makedirs(os.path.join(HERE, "preview"), exist_ok=True)
         for ts in args[1:]:
-            p = os.path.join(HERE, "preview", f"t{float(ts):05.2f}.png")
-            compose(float(ts)).save(p)
+            if ts == "capa":
+                p = os.path.join(HERE, "preview", "capa.png")
+                make_cover().save(p)
+            else:
+                p = os.path.join(HERE, "preview", f"t{float(ts):05.2f}.png")
+                compose(float(ts)).save(p)
             print(p)
         return
 
@@ -629,7 +686,7 @@ def main():
         sys.exit("ffmpeg falhou")
     encode(audio_full, OUT_MAIN, video_tmp)
     encode(audio_nomusic, OUT_NOMUSIC, video_tmp)
-    compose(13.9).convert("RGB").save(OUT_COVER, quality=93)
+    make_cover().convert("RGB").save(OUT_COVER, quality=93)
     print(OUT_MAIN, OUT_NOMUSIC, OUT_COVER, sep="\n")
 
 
