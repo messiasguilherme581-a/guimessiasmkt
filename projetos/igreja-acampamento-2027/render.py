@@ -56,7 +56,7 @@ T = {
     "open2": "VOLTOU",
     "tem": "tem",
     "gincana": "GINCANA",
-    "resenha": "RESENHA",
+    "alegria": "ALEGRIA",
     "adoracao": "ADORAÇÃO",
     "e_tem": "e o principal:",
     "deus": "DEUS",
@@ -464,11 +464,11 @@ def compose(t: float) -> Image.Image:
         band(frame, img, bh, cy=1050)
         headline_above(frame, t, 2.08, T["tem"], T["gincana"], bt=1050 - BAND_H // 2)
 
-    # ---------------- 4–6 s · tem RESENHA (câmera lenta)
+    # ---------------- 4–6 s · tem ALEGRIA (câmera lenta)
     elif t < 6.0:
         img = shot_gincana(3.58 + (t - 4.0) * 0.5, punch(t, 4.0, 0.1) * lerp(1.0, 1.06, prog(t, 4, 2)), 0.3, 0.5)
         band(frame, img, cy=870)
-        headline_below(frame, t, 4.04, T["tem"], T["resenha"], bb=870 + BAND_H // 2)
+        headline_below(frame, t, 4.04, T["tem"], T["alegria"], bb=870 + BAND_H // 2)
 
     # ---------------- 6–8 s · a faixa abre: tem ADORAÇÃO
     elif t < 8.0:
