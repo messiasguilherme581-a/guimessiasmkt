@@ -7,6 +7,8 @@ Peça de divulgação para **jovens de 15 a 30 anos**, editada com os melhores t
 | `acampamento-2027-reels.mp4` | **Versão principal**: 1080x1920, 30 fps, 20 s, com trilha original + efeitos + som ambiente (cerca de 16 MB) |
 | `acampamento-2027-reels-sem-musica.mp4` | Mesmo vídeo, só com efeitos e som ambiente, para colocar uma música da biblioteca do Instagram ou do TikTok |
 | `capa.jpg` | Capa própria: O ACAMPA VOLTOU + INSCRIÇÕES ABERTAS sobre a roda de adoração |
+| `acampamento-2027-telao.mp4` | **Versão telão**: horizontal 16:9, 1920x1080, 30 fps, 20 s, com trilha (cerca de 32 MB) |
+| `acampamento-2027-telao-sem-musica.mp4` | Versão telão só com efeitos e som ambiente |
 | `render.py` | Gera o vídeo; os textos ficam no bloco `T` |
 | `trilha.py` | Gera a trilha (120 BPM, sintetizada aqui mesmo, sem direitos de terceiros) |
 | `assets/` | Material bruto: `gincana.mp4`, `adoracao.mp4`, `chacara.jpg` e as fontes (licença OFL) |
@@ -70,10 +72,24 @@ Peça de divulgação para **jovens de 15 a 30 anos**, editada com os melhores t
 - "Se você foi no último, já sabe. Se não foi… esse é o ano."
 - "Gincana, alegria e Deus no meio. As inscrições abriram."
 
+## Versão telão (horizontal 16:9)
+
+Mesmo roteiro, mesma trilha e mesmos tempos do Reels, com o layout refeito para tela deitada:
+
+- **Tela de cinema:** a gincana e a chácara, que já são imagens deitadas, entram em tela cheia com barras de cinema (2,39:1). Na adoração as barras abrem para 16:9 cheio.
+- **Adoração recortada:** o vídeo é vertical, então o telão mostra a faixa da roda de pessoas, que fica panorâmica.
+- **Títulos embaixo, em uma linha:** *tem* **GINCANA**, *tem* **ALEGRIA**, **INSCRIÇÕES ABERTAS**. Margens seguras de projeção nas laterais.
+- **Cartela final:** imagem escurecida e texto centralizado, para ler de longe.
+- **Única mudança de texto:** "e marca quem vai com você ↓" virou **"e chama quem vai com você"**, porque no telão não existe marcar nos comentários.
+
+Para projetar, toque o arquivo `.mp4` direto do computador. Se for mandar por WhatsApp, envie **como documento**, senão o app comprime e a imagem perde qualidade.
+
 ## Como mudar textos e gerar de novo
 
 1. Edite o bloco `T` em `render.py`. Exemplo: troque `cta_sub` pelo WhatsApp ou pela data.
 2. Para conferir quadros parados: `python3 render.py --preview 1.5 9 13.5 16.5 capa`, que salva PNGs em `preview/`.
 3. Para gerar o vídeo final: `python3 render.py`. Na primeira vez a restauração leva cerca de 3 min a mais; depois, cerca de 1 min 20 s em 4 núcleos e também gera as duas trilhas.
+
+4. Para a versão telão: `python3 render.py --telao` (aceita `--preview` também).
 
 Requisitos: Python 3.11+, Pillow, numpy, scipy, ffmpeg com libx264 e Inter Display em `/usr/share/fonts/opentype/inter`. Anton e Instrument Serif já estão em `assets/fonts`.

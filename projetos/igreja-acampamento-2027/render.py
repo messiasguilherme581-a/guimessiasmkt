@@ -9,8 +9,10 @@ Material: assets/gincana.mp4 · assets/adoracao.mp4 · assets/chacara.jpg
 Trilha: trilha.py (original, sintetizada; sem direitos de terceiros)
 
 Uso:
-    python3 render.py                       # vídeos finais + capa
+    python3 render.py                       # Reels 9:16: vídeos finais + capa
     python3 render.py --preview 1.5 3 7 13  # só quadros PNG em preview/
+    python3 render.py --telao               # versão horizontal 16:9 (1920x1080) para telão
+    python3 render.py --telao --preview 3 9 # quadros da versão telão
 """
 from __future__ import annotations
 
@@ -29,12 +31,20 @@ import trilha
 HERE = os.path.dirname(os.path.abspath(__file__))
 A = lambda *p: os.path.join(HERE, "assets", *p)  # noqa: E731
 CACHE = os.path.join(HERE, ".cache")
-OUT_MAIN = os.path.join(HERE, "acampamento-2027-reels.mp4")
-OUT_NOMUSIC = os.path.join(HERE, "acampamento-2027-reels-sem-musica.mp4")
+TELAO = "--telao" in sys.argv  # versão horizontal 16:9 para projeção
+_NOME = "telao" if TELAO else "reels"
+OUT_MAIN = os.path.join(HERE, f"acampamento-2027-{_NOME}.mp4")
+OUT_NOMUSIC = os.path.join(HERE, f"acampamento-2027-{_NOME}-sem-musica.mp4")
 OUT_COVER = os.path.join(HERE, "capa.jpg")
 
-W, H, FPS, DUR = 1080, 1920, 30, 20.0
+W, H = (1920, 1080) if TELAO else (1080, 1920)
+FPS, DUR = 30, 20.0
 NFRAMES = int(DUR * FPS)
+# telão: janela "scope" 2,39:1 com barras de cinema, que abrem para 16:9 cheio na adoração
+LB_H = 804
+LB_B = (H + LB_H) // 2  # base da janela
+BASE_T = 968            # baseline dos títulos do telão (a cedilha ainda cabe na tela)
+MX = 96                 # margem lateral segura para projeção
 BAND_H, BAND_Y = 540, 960  # faixa 2:1, centro vertical
 BT, BB = BAND_Y - BAND_H // 2, BAND_Y + BAND_H // 2  # topo / base da faixa
 
@@ -69,6 +79,7 @@ T = {
     "sua_vaga": "SUA VAGA",
     "cta_sub": "Inscrições com a liderança da igreja",
     "cta_tag": "e marca quem vai com você",
+    "cta_tag_telao": "e chama quem vai com você",  # no telão não existe "marcar nos comentários"
 }
 
 
@@ -323,6 +334,9 @@ VIG = _vignette()
 
 def _top_shade():
     yy = np.linspace(0, 1, H)[:, None]
+    if TELAO:  # títulos ficam embaixo: escurece mais a base
+        a = np.clip((yy - 0.46) / 0.54, 0, 1) ** 1.3 * 0.76 + np.clip(1 - yy / 0.2, 0, 1) ** 1.5 * 0.4
+        return (1 - a)[..., None].astype(np.float32)
     a = np.clip(1 - yy / 0.5, 0, 1) ** 1.3 * 0.62 + np.clip((yy - 0.72) / 0.28, 0, 1) ** 1.5 * 0.5
     return (1 - a)[..., None].astype(np.float32)
 
@@ -332,10 +346,14 @@ TOP_SHADE = _top_shade()
 
 def _leak():
     """Light leak quente (gradientes desfocados), aplicado em 'screen'."""
-    img = Image.new("RGB", (W // 4, H // 4), (0, 0, 0))
+    qw, qh = W // 4, H // 4
+    img = Image.new("RGB", (qw, qh), (0, 0, 0))
     d = ImageDraw.Draw(img)
-    for (x, y, r, c) in [(40, 60, 170, (255, 90, 20)), (230, 120, 120, (255, 170, 60)),
-                         (90, 330, 150, (255, 60, 30)), (260, 420, 110, (255, 140, 40))]:
+    m = min(qw, qh)
+    for (a, b, rr, c) in [(0.148, 0.125, 0.63, (255, 90, 20)), (0.852, 0.25, 0.444, (255, 170, 60)),
+                          (0.333, 0.6875, 0.556, (255, 60, 30)), (0.963, 0.875, 0.407, (255, 140, 40))]:
+        # (a, b) = fração no eixo curto / longo: no telão os eixos trocam
+        x, y, r = (b * qw, a * qh, rr * m) if TELAO else (a * qw, b * qh, rr * m)
         d.ellipse((x - r, y - r, x + r, y + r), fill=c)
     img = img.filter(ImageFilter.GaussianBlur(55)).resize((W, H), Image.BICUBIC)
     return np.asarray(img).astype(np.float32) / 255
@@ -409,17 +427,17 @@ def hud(frame, t):
     a = e_out_cubic(prog(t, 0.45, 0.4))
     if a <= 0:
         return
-    y = 236
-    l = spr(T["hud_l"], F_LABEL, 27, WHITE, 0.0, 4)
-    r = spr(T["hud_r"], F_LABEL, 27, WHITE, 0.0, 4)
-    put(frame, l, 64, y, 1, a * 0.9, center=False)
-    rw = text_w(T["hud_r"], F_LABEL, 27, 4)
-    put(frame, r, W - 64 - rw, y, 1, a * 0.9, center=False)
+    y, fs, tr, mx, rad = (88, 34, 5, MX, 10) if TELAO else (236, 27, 4, 64, 8)
+    l = spr(T["hud_l"], F_LABEL, fs, WHITE, 0.0, tr)
+    r = spr(T["hud_r"], F_LABEL, fs, WHITE, 0.0, tr)
+    put(frame, l, mx, y, 1, a * 0.9, center=False)
+    rw = text_w(T["hud_r"], F_LABEL, fs, tr)
+    put(frame, r, W - mx - rw, y, 1, a * 0.9, center=False)
     # ponto "REC" piscando
     if (t % 1.0) < 0.62:
         d = ImageDraw.Draw(frame)
-        cx, cy = W - 64 - rw - 24, y - 11
-        d.ellipse((cx - 8, cy - 8, cx + 8, cy + 8), fill=ORANGE + (int(255 * a),))
+        cx, cy = W - mx - rw - 3 * rad, y - round(fs * 0.4)
+        d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), fill=ORANGE + (int(255 * a),))
 
 
 def compose(t: float) -> Image.Image:
@@ -581,9 +599,9 @@ def finish(frame: Image.Image, t: float) -> Image.Image:
     for t0, d in LEAKS:
         if t0 <= t < t0 + d:
             p = (t - t0) / d
-            a = math.sin(math.pi * p) * 0.45
-            shift = int(lerp(-300, 300, p))
-            lk = np.roll(LEAK, shift, axis=0) * a * 255
+            a = math.sin(math.pi * p) * (0.3 if TELAO else 0.45)
+            shift = int(lerp(-500, 500, p)) if TELAO else int(lerp(-300, 300, p))
+            lk = np.roll(LEAK, shift, axis=1 if TELAO else 0) * a * 255
             arr = 255 - (255 - arr) * (255 - lk) / 255
 
     # flashes
@@ -642,9 +660,164 @@ def make_cover() -> Image.Image:
     return finish(frame, 99.0)
 
 
+# ------------------------------------------------------------------ versão telão (16:9)
+def lbox(frame, img, h=LB_H):
+    """Cola a imagem 16:9 deixando visível só a altura h (barras de cinema em cima e embaixo)."""
+    h = int(round(min(h, H)))
+    if h <= 0:
+        return
+    top = (H - h) // 2
+    frame.paste(img.crop((0, top, W, top + h)), (0, top))
+
+
+def shot_t(name, ts, z=1.0, fx=0.5, fy=0.5, blend=False, shade=0.0):
+    """Plano em 16:9 cheio. A adoração (vertical) entra recortada na faixa da roda de pessoas."""
+    img = view(src_image(name, ts, blend), W, H, z, fx, fy)
+    if shade > 0:
+        a = np.asarray(img).astype(np.float32) * (1 + (TOP_SHADE - 1) * shade)
+        img = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    return img
+
+
+def inline_title(frame, t, t0, small, big, side="left", size=270):
+    """Serifa laranja + PALAVRA em Anton na mesma linha, no canto inferior, encostando na barra."""
+    s = fit(big, F_ANTON, 1200, size)
+    bw = text_w(big, F_ANTON, s)
+    ss, gap = 140, 30
+    sw = text_w(small, F_SERIF, ss)
+    x0 = MX if side == "left" else W - MX - (sw + gap + bw)
+    p = e_out_cubic(prog(t, t0, 0.3))
+    put(frame, spr(small, F_SERIF, ss, ORANGE, 0.9), x0, BASE_T + (1 - p) * 20, 1, p, center=False)
+    reveal(frame, big, F_ANTON, s, WHITE, x0 + sw + gap + bw / 2, BASE_T, t, t0 + 0.06, shadow=0.5)
+
+
+def two_tone(frame, t, a_txt, b_txt, base, maxw, maxs, t_a, t_b, stagger=0.03):
+    """Uma linha em duas cores: primeira palavra branca (revelada), segunda laranja (impacto)."""
+    s = fit(a_txt + " " + b_txt, F_ANTON, maxw, maxs)
+    w1, w2, gap = text_w(a_txt, F_ANTON, s), text_w(b_txt, F_ANTON, s), 0.24 * s
+    x0 = (W - (w1 + gap + w2)) / 2
+    reveal(frame, a_txt, F_ANTON, s, WHITE, x0 + w1 / 2, base, t, t_a, stagger, shadow=0.5)
+    slam(frame, spr(b_txt, F_ANTON, s, ORANGE, 0.5), x0 + w1 + gap + w2 / 2, base, t, t_b, 1.2)
+    return s
+
+
+def compose_telao(t: float) -> Image.Image:
+    frame = Image.new("RGBA", (W, H), INK + (255,))
+
+    # ---------------- 0–2 s · gancho: avisa a galera: O ACAMPA / VOLTOU (vazado com a adoração)
+    if t < 2.0:
+        s1 = fit(T["open1"], F_ANTON, 1150, 300)
+        s2 = fit(T["open2"], F_ANTON, 1150, 470)
+        c1, c2 = cap_h(F_ANTON, s1), cap_h(F_ANTON, s2)
+        base1 = H / 2 - (c1 + 36 + c2) / 2 + c1 + 48
+        slam(frame, spr(T["open1"], F_ANTON, s1, WHITE), W / 2, base1, t, 0.0, 1.22)
+        w1 = text_w(T["open1"], F_ANTON, s1)
+        pk = e_out_cubic(prog(t, 0.14, 0.3))
+        put(frame, spr(T["kicker"], F_SERIF, 112, ORANGE), W / 2 - w1 / 2 + 4,
+            base1 - c1 - 18 + (1 - pk) * 20, 1, pk, center=False)
+        if t >= 1.0:
+            img, ox, oy = spr(T["open2"], F_ANTON, s2, WHITE)
+            mask = img.getchannel("A")
+            fill = view(src_image("adoracao", 1.0 + (t - 1.0) * 0.8, True), img.width, img.height, 1.0, 0.5, 0.47, False)
+            fill = Image.fromarray(np.clip(np.asarray(fill).astype(np.float32) * 1.18 + 10, 0, 255).astype(np.uint8))
+            fill = fill.convert("RGBA")
+            ring = ImageChops.subtract(mask.filter(ImageFilter.MaxFilter(7)), mask)
+            fill.paste(Image.new("RGBA", fill.size, WHITE + (255,)), (0, 0), ring)
+            fill.putalpha(ImageChops.lighter(mask, ring))
+            sc = lerp(1.25, 1.0, e_out_expo(prog(t, 1.0, 0.25)))
+            put(frame, (fill, ox, oy), W / 2, base1 + 36 + c2, sc, e_out_cubic(prog(t, 1.0, 0.05)))
+
+    # ---------------- 2–4 s · tem GINCANA (cabo de guerra, tela de cinema)
+    elif t < 4.0:
+        h = LB_H * e_out_expo(prog(t, 2.0, 0.28))
+        if t < 3.0:
+            p = t - 2.0
+            ts = 0.62 + 1.0 * (1 - (1 - p) ** 1.7)  # rampa: rápido -> lento
+            img = shot_t("gincana", ts, punch(t, 2.0, 0.1), 0.42, 0.5, shade=0.85)
+        else:
+            img = shot_t("gincana", 1.92 + (t - 3.0), punch(t, 3.0, 0.08), 0.5, 0.5, shade=0.85)
+        lbox(frame, img, h)
+        inline_title(frame, t, 2.08, T["tem"], T["gincana"], "left")
+
+    # ---------------- 4–6 s · tem ALEGRIA (câmera lenta)
+    elif t < 6.0:
+        img = shot_t("gincana", 3.58 + (t - 4.0) * 0.5, punch(t, 4.0, 0.1) * lerp(1.0, 1.06, prog(t, 4, 2)), 0.3, 0.5, shade=0.85)
+        lbox(frame, img)
+        inline_title(frame, t, 4.04, T["tem"], T["alegria"], "right")
+
+    # ---------------- 6–8 s · as barras abrem: tem ADORAÇÃO
+    elif t < 8.0:
+        ex = e_io_cubic(prog(t, 6.0, 0.55))
+        img = shot_t("adoracao", 0.4 + (t - 6.0), lerp(1.0, 1.05, prog(t, 6, 2)), 0.5, 0.56, True, lerp(0.85, 1.0, ex))
+        lbox(frame, img, lerp(LB_H, H, ex))
+        if t >= 6.3:
+            inline_title(frame, t, 6.3, T["tem"], T["adoracao"], "left")
+
+    # ---------------- 8–10 s · e o principal: DEUS NO MEIO
+    elif t < 10.0:
+        img = shot_t("adoracao", 7.6 + (t - 8.0), punch(t, 8.0, 0.08) * lerp(1.04, 1.14, prog(t, 8, 2)), 0.5, 0.5, True, 1.0)
+        frame.paste(img, (0, 0))
+        line = T["deus"] + " " + T["no_meio"]
+        s = fit(line, F_ANTON, 1500, 300)
+        slam(frame, spr(line, F_ANTON, s, WHITE, 0.55), W / 2, BASE_T, t, 8.04, 1.12)
+        dw = text_w(line, F_ANTON, s)
+        p = e_out_cubic(prog(t, 8.16, 0.3))
+        put(frame, spr(T["e_tem"], F_SERIF, 124, ORANGE, 0.6), W / 2 - dw / 2 + 4,
+            BASE_T - cap_h(F_ANTON, s) - 18 + (1 - p) * 20, 1, p, center=False)
+
+    # ---------------- 10–12 s · subida: SÓ FALTA VOCÊ
+    elif t < 12.0:
+        words = T["build"]
+        starts = [10.0, 10.5, 11.0, 11.5]
+        i = max(k for k, s0 in enumerate(starts) if t >= s0)
+        t0 = starts[i]
+        z = punch(t, t0, 0.14, 0.35)
+        cx, smax = W / 2, 440
+        if i == 0:
+            frame.paste(shot_t("adoracao", 4.0 + (t - t0), z * 1.08, 0.5, 0.52, True, 0.5), (0, 0))
+        elif i == 1:
+            frame.paste(shot_t("gincana", 2.3 + (t - t0), z * 1.12, 0.45, 0.5), (0, 0))
+        elif i == 2:  # "VOCÊ" ao lado do rapaz olhando pra câmera
+            frame.paste(shot_t("gincana", 4.02 + (t - t0) * 0.5, z * 1.18, 0.3, 0.45), (0, 0))
+            cx, smax = 1340, 360
+        color = ORANGE if i == 3 else WHITE
+        s = fit(words[i], F_ANTON, 1500, smax)
+        slam(frame, spr(words[i], F_ANTON, s, color, 0.55), cx, H / 2 + cap_h(F_ANTON, s) / 2, t, t0, 1.3)
+
+    # ---------------- 12–15 s · DROP: INSCRIÇÕES ABERTAS (chácara)
+    elif t < 15.0:
+        h = LB_H * e_out_expo(prog(t, 12.0, 0.3))
+        img = shot_t("chacara", 0, punch(t, 12.0, 0.15) * lerp(1.0, 1.08, prog(t, 12, 3)), 0.55, 0.45)
+        lbox(frame, img, h)
+        two_tone(frame, t, T["insc"], T["abertas"], BASE_T, 1720, 260, 12.02, 12.5)
+        la = e_out_cubic(prog(t, 12.3, 0.35))
+        put(frame, spr(T["label"], F_LABEL, 34, ORANGE, 0.0, 10), W / 2, 88 + (1 - la) * 10, 1, la)
+
+    # ---------------- 15–20 s · cartela final: GARANTE SUA VAGA
+    else:
+        img = shot_t("adoracao", 9.0 + (t - 15.0) * 0.75, punch(t, 15.0, 0.08) * lerp(1.0, 1.08, prog(t, 15, 5)), 0.5, 0.5, True)
+        img = Image.eval(img, lambda v: int(v * 0.42))  # escurece a imagem: cartela legível de longe
+        lbox(frame, img)
+        b1 = 505
+        two_tone(frame, t, T["garanta"], T["sua_vaga"], b1, 1480, 250, 15.02, 15.5, 0.04)
+        if t >= 16.0:
+            p = e_out_cubic(prog(t, 16.0, 0.4))
+            put(frame, spr(T["cta_sub"], F_SMALL, 56, WHITE, 0.5), W / 2, b1 + 116 + (1 - p) * 16, 1, p * 0.95)
+        if t >= 17.0:
+            p = e_out_cubic(prog(t, 17.0, 0.4))
+            put(frame, spr(T["cta_tag_telao"], F_SERIF, 98, ORANGE, 0.5), W / 2, b1 + 246 + (1 - p) * 16, 1, p)
+
+    if not (11.5 <= t < 15.0):  # na revelação o selo "ACAMPAMENTO 2027" ocupa a barra de cima
+        hud(frame, t)
+    return finish(frame, t)
+
+
+COMPOSE = compose_telao if TELAO else compose
+
+
 # ------------------------------------------------------------------ main
 def _frame(i):
-    return compose(i / FPS).tobytes()
+    return COMPOSE(i / FPS).tobytes()
 
 
 def encode(audio_path, out_path, video_tmp):
@@ -655,7 +828,7 @@ def encode(audio_path, out_path, video_tmp):
 
 def main():
     extract_frames()
-    args = sys.argv[1:]
+    args = [a for a in sys.argv[1:] if a != "--telao"]
     if args and args[0] == "--preview":
         os.makedirs(os.path.join(HERE, "preview"), exist_ok=True)
         for ts in args[1:]:
@@ -663,18 +836,20 @@ def main():
                 p = os.path.join(HERE, "preview", "capa.png")
                 make_cover().save(p)
             else:
-                p = os.path.join(HERE, "preview", f"t{float(ts):05.2f}.png")
-                compose(float(ts)).save(p)
+                p = os.path.join(HERE, "preview", f"{_NOME}_t{float(ts):05.2f}.png")
+                COMPOSE(float(ts)).save(p)
             print(p)
         return
 
     audio_full, audio_nomusic = trilha.main(CACHE)
-    video_tmp = os.path.join(CACHE, "video.mp4")
+    video_tmp = os.path.join(CACHE, f"video_{_NOME}.mp4")
+    # telão: mais bitrate (qualidade de projeção); Reels: leve o bastante para WhatsApp
+    crf, maxrate, bufsize, level = ("19", "12M", "24M", "4.2") if TELAO else ("21", "6M", "12M", "4.1")
     ff = subprocess.Popen([
         "ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-        "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "21",
-        "-maxrate", "6M", "-bufsize", "12M", "-pix_fmt", "yuv420p", "-profile:v", "high",
-        "-level", "4.1", "-movflags", "+faststart", video_tmp,
+        "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", crf,
+        "-maxrate", maxrate, "-bufsize", bufsize, "-pix_fmt", "yuv420p", "-profile:v", "high",
+        "-level", level, "-movflags", "+faststart", video_tmp,
     ], stdin=subprocess.PIPE)
     with Pool(os.cpu_count() or 2) as pool:
         for n, buf in enumerate(pool.imap(_frame, range(NFRAMES), chunksize=3)):
@@ -686,6 +861,9 @@ def main():
         sys.exit("ffmpeg falhou")
     encode(audio_full, OUT_MAIN, video_tmp)
     encode(audio_nomusic, OUT_NOMUSIC, video_tmp)
+    if TELAO:
+        print(OUT_MAIN, OUT_NOMUSIC, sep="\n")
+        return
     make_cover().convert("RGB").save(OUT_COVER, quality=93)
     print(OUT_MAIN, OUT_NOMUSIC, OUT_COVER, sep="\n")
 
