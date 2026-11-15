@@ -4,7 +4,7 @@ Nova versão do vídeo de abertura do culto (`assets/original.mp4`): as mesmas 8
 
 | Arquivo | O que é |
 |---|---|
-| `preludio-culto.mp4` | Vídeo final: 1920x1080, 30 fps, 2 min 10 s, com o áudio original |
+| `preludio-culto.mp4` | Vídeo final: 1920x1080, 30 fps, 2 min 11 s, cerca de 36 MB, com o áudio original copiado sem recompressão |
 | `render.py` | Gera o vídeo; as frases ficam no bloco `QUOTES` |
 | `assets/original.mp4` | Vídeo original (fonte da música) |
 | `assets/fonts/` | Anton (licença OFL) |
@@ -56,6 +56,6 @@ Decisões que ficaram como no original:
 
 1. Edite o bloco `QUOTES` em `render.py` (texto, estilo `"w"` branco ou `"g"` dourado, e o atraso de cada linha).
 2. Para conferir quadros parados: `python3 render.py --preview 9.5 47 124 126.6`.
-3. Para gerar o vídeo final: `python3 render.py` (cerca de 8 minutos em 4 núcleos).
+3. Para gerar o vídeo final: `python3 render.py` (cerca de 10 minutos em 4 núcleos, contando a compressão final).
 
 Requisitos: Python 3.11+, Pillow, numpy, scipy, ffmpeg com libx264 e Inter Display em `/usr/share/fonts/opentype/inter`.

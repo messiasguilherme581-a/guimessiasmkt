@@ -618,13 +618,13 @@ def main():
     print(OUT)
 
 
-def encode(master, crf="21", maxrate="5M"):
-    """Vídeo final: H.264 + o áudio ORIGINAL copiado sem recompressão."""
+def encode(master, crf="23", maxrate="2800k"):
+    """Vídeo final: H.264 (cerca de 36 MB) + o áudio ORIGINAL copiado sem recompressão."""
     subprocess.run([
         "ffmpeg", "-v", "error", "-y", "-i", master, "-i", SRC, "-map", "0:v", "-map", "1:a",
-        "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-maxrate", maxrate, "-bufsize", "10M",
-        "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "4.2", "-c:a", "copy",
-        "-movflags", "+faststart", OUT,
+        "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-maxrate", maxrate, "-bufsize", "8M",
+        "-x264-params", "aq-mode=3", "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "4.2",
+        "-c:a", "copy", "-movflags", "+faststart", OUT,
     ], check=True)
 
 
