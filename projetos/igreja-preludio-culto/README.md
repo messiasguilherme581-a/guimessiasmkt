@@ -5,10 +5,10 @@ Nova versão do vídeo de abertura do culto (`assets/original.mp4`): as mesmas 8
 | Arquivo | O que é |
 |---|---|
 | `preludio-culto.mp4` | Vídeo final: 1920x1080, 30 fps, 2 min 11 s, cerca de 36 MB, com o áudio original copiado sem recompressão |
-| `preludio-culto-opcao-b.mp4` | **Opção B**: mesmas frases e mesma música em estilo documentário de película |
+| `preludio-culto-opcao-b.mp4` | **Opção B (escolhida)**: estilo documentário de película, nas cores e com a logo da Igreja Evangélica Atos |
 | `render.py` | Gera a opção A; as frases ficam no bloco `QUOTES` |
 | `render_b.py` | Gera a opção B |
-| `assets/adoracao.mp4` | Imagens da roda de adoração, usadas em preto e branco na opção B |
+| `assets/logo-atos.png` | Logo da Igreja Evangélica Atos (branca, fundo transparente) |
 | `assets/original.mp4` | Vídeo original (fonte da música) |
 | `assets/fonts/` | Anton (opção A), DM Serif Display e Courier Prime (opção B), todas com licença OFL |
 
@@ -41,22 +41,25 @@ Decisões que ficaram como no original:
 - **Contagem regressiva discreta:** "O culto começa em 02:05", zerando quando entra a cartela final. Para tirar, `COUNTDOWN = False` no `render.py`.
 - **Cartela final:** "Nosso culto se inicia agora!" entra com clarão no ataque da música em 2:06.
 
-## Opção B: documentário em película
+## Opção B: documentário em película, nas cores da Igreja Evangélica Atos
 
-A opção A (dourado com brilho, partículas e raios de luz) tem os sinais típicos de vídeo gerado por IA. A opção B troca essa linguagem pela de filme de verdade, alinhada ao que a pesquisa de referências apontou: imperfeição analógica (grão, riscos, corte seco), tipografia editorial e movimento contido.
+A opção A (dourado com brilho, partículas e raios de luz) tem os sinais típicos de vídeo gerado por IA. A opção B troca essa linguagem pela de filme de verdade: imperfeição analógica (grão, riscos, corte seco), tipografia editorial e movimento contido. Esta é a versão escolhida.
 
 | | Opção A | Opção B |
 |---|---|---|
-| Cor | Azul e dourado com brilho | Preto e branco quente, com um único acento vermelhão |
-| Fundo | Partículas, névoa e raios gerados | Preto de película e, em 3 frases, a roda de adoração da igreja em câmera lenta |
+| Cor | Azul e dourado com brilho | Preto de película com luz azul; texto prateado e detalhes no azul da Atos |
+| Fundo | Partículas, névoa e raios gerados | Preto de película com uma luz azul suave |
 | Letra | Anton em caixa alta, centralizada | DM Serif Display em caixa normal, alinhada à esquerda |
-| Ênfase | Palavras em dourado | Itálico com um traço à mão |
-| Autor | Caixa alta espaçada | Datilografado letra por letra (Courier) |
-| Troca de frase | Risco de luz | Corte seco com queima de filme |
+| Ênfase | Palavras em dourado | Itálico com um traço azul feito à mão |
+| Autor | Caixa alta espaçada | Datilografado letra por letra (Courier), em prata |
+| Troca de frase | Risco de luz | Corte seco com vazamento de luz azul e prata |
 | Acabamento | Brilho suave | Grão, poeira, riscos, tremor de projetor e tela de cinema (2,39:1) |
-| Final | Dourado sobre azul | Inversão para papel claro com tinta preta |
+| Final | Dourado sobre azul | Inversão para cartela prata com tinta azul-marinho |
+| Marca | Não tem | Logo da Atos pequena no canto inferior direito, o vídeo todo |
 
-- **Imagens da igreja:** entram nas frases 1 (Ravenhill), 5 (oração) e 7 (avivamento). Para usar só o preto de película, `USE_FOOTAGE = False` em `render_b.py`.
+- **Cores da igreja:** azul `#233DFF` (o mesmo das artes da Atos no Canva) e prata. Sobre o preto, os traços usam esse azul um pouco mais claro para manter a leitura.
+- **Logo:** `assets/logo-atos.png`, tirada do arquivo "ATOS - LOGO - PNG" do Canva na versão de 200 px de largura, que é a que o conector entrega. Serve para o canto do vídeo (178 px). Para usar a logo maior, é preciso o arquivo original.
+- **Sem imagens do acampamento:** a primeira versão desta opção usava a roda de adoração em três frases; foi retirada a pedido.
 - **Contagem regressiva:** fica na barra de cima, em máquina de escrever. Para tirar, `COUNTDOWN = False`.
 - **Textos e tempos:** as mesmas correções e os mesmos tempos da opção A; aqui em caixa normal ("Evangelho", "Bíblia", "Palavra de Deus" e "Ele" com maiúscula).
 

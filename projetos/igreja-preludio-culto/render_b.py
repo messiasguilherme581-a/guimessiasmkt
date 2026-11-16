@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Prelúdio do culto · OPÇÃO B: documentário em película (1920x1080, mesma música).
+"""Prelúdio do culto · OPÇÃO B: documentário em película, nas cores da Igreja Evangélica Atos.
 
-Outra linguagem para as mesmas 8 frases: nada de brilho dourado nem partículas. Aqui o vídeo
-parece filme: preto e branco quente, grão, poeira e riscos de película, leve tremor de projetor,
-corte seco com queima de filme, tela de cinema (barras 2,39:1), serifa editorial alinhada à
-esquerda, ênfases em itálico com um traço à mão e autores em máquina de escrever. Três frases
-passam sobre imagens reais da igreja (roda de adoração) em câmera lenta, preto e branco.
+Mesmas 8 frases e mesma música, com cara de filme: preto de película com grão, poeira, riscos e leve
+tremor de projetor; corte seco com vazamento de luz; tela de cinema (barras 2,39:1); serifa editorial
+alinhada à esquerda; ênfases em itálico com um traço à mão; autores em máquina de escrever.
+Identidade da igreja: detalhes em azul (#233DFF) e prata, e a logo pequena no canto inferior direito.
 
 Uso:
     python3 render_b.py                        # vídeo final -> preludio-culto-opcao-b.mp4
@@ -37,64 +36,68 @@ BH = LB_B - LB_T
 X0 = 172                # margem esquerda do texto
 T_END = 126.0
 COUNTDOWN = True
-USE_FOOTAGE = True      # False = todas as frases sobre preto de película (sem imagens da igreja)
 
 F_SERIF = A("fonts", "DMSerifDisplay-Regular.ttf")
 F_ITAL = A("fonts", "DMSerifDisplay-Italic.ttf")
 F_MONO = A("fonts", "CourierPrime-Bold.ttf")
 
-PAPER = (236, 229, 214)   # branco de papel (texto)
-INK = (22, 20, 18)        # tinta (texto sobre papel)
-RED = (212, 64, 32)       # vermelhão: único acento
-BLACK = (9, 8, 7)
+# Cores da Igreja Evangélica Atos: azul e prata
+TEXT = (236, 239, 245)    # branco prateado (frases)
+SILVER = (186, 194, 206)  # prata (autor, fios, contagem)
+BLUE = (35, 61, 255)      # azul da marca (#233DFF)
+BLUE_L = (96, 124, 255)   # o mesmo azul, mais claro, para os traços sobre o preto
+INK = (12, 18, 44)        # azul-marinho quase preto (texto sobre a cartela clara)
+CARD = (212, 218, 227)    # prata claro (cartela final)
+BLACK = (6, 7, 11)
+LOGO_W = 178              # largura da logo no canto (px)
 
 # ------------------------------------------------------------------ FRASES (corrigidas, caixa normal)
 # linha: (atraso em s, [(texto, estilo[, atraso extra])]) · "r" romano · "i" itálico com traço à mão
 QUOTES = [
-    dict(t0=0.5, author="Leonard Ravenhill", author_t=9.1, plate=(0.6, 0.56), lines=[
+    dict(t0=0.5, author="Leonard Ravenhill", author_t=9.1, lines=[
         (0.25, [("“As únicas pessoas que querem", "r")]),
         (1.9, [("mudar o Evangelho", "i")]),
         (4.3, [("são aquelas que não são", "r")]),
         (6.2, [("mudadas por ele.”", "i")]),
     ]),
-    dict(t0=15.8, author="John Piper", author_t=14.7, plate=None, lines=[
+    dict(t0=15.8, author="John Piper", author_t=14.7, lines=[
         (0.25, [("“Tire minhas pernas,", "r")]),
         (2.6, [("mas não minha ", "r"), ("Bíblia.", "i", 0.5)]),
         (6.5, [("Eu posso chegar ao céu sem andar,", "r")]),
         (10.7, [("mas não sem a ", "r"), ("Palavra de Deus.”", "i", 0.5)]),
     ]),
-    dict(t0=34.7, author="John Piper", author_t=13.4, plate=None, lines=[
+    dict(t0=34.7, author="John Piper", author_t=13.4, lines=[
         (0.25, [("“Você quer ouvir a voz de Deus?", "r")]),
         (3.0, [("Leia a Bíblia.", "i")]),
         (7.0, [("Você quer ouvir a voz de Deus", "r")]),
         (8.1, [("audivelmente?", "r")]),
         (10.6, [("Leia a Bíblia em voz alta.”", "i")]),
     ]),
-    dict(t0=54.4, author="Billy Graham", author_t=11.2, plate=None, lines=[
+    dict(t0=54.4, author="Billy Graham", author_t=11.2, lines=[
         (0.25, [("“Quando você se lembrar", "r")]),
         (2.2, [("de onde Deus te tirou,", "i")]),
         (5.6, [("vai parar de duvidar", "r")]),
         (8.0, [("de aonde Ele pode te levar.”", "i")]),
     ]),
-    dict(t0=73.2, author="Leonard Ravenhill", author_t=8.0, plate=(5.0, 0.50), lines=[
+    dict(t0=73.2, author="Leonard Ravenhill", author_t=8.0, lines=[
         (0.25, [("“Se fracassarmos na ", "r"), ("oração,", "i", 0.45)]),
         (2.5, [("fracassaremos em toda", "r")]),
         (4.2, [("frente de batalha.”", "r")]),
     ]),
-    dict(t0=86.8, author="David Wilkerson", author_t=8.6, plate=None, lines=[
+    dict(t0=86.8, author="David Wilkerson", author_t=8.6, lines=[
         (0.25, [("“Estou cansado da música", "r")]),
         (2.2, [("que faz jovens pularem", "r")]),
         (4.6, [("em vez de ", "r"), ("dobrarem", "i", 0.4)]),
         (5.9, [("seus joelhos.”", "i")]),
     ]),
-    dict(t0=100.1, author="David Wilkerson", author_t=9.9, plate=(9.0, 0.47), lines=[
+    dict(t0=100.1, author="David Wilkerson", author_t=9.9, lines=[
         (0.25, [("“Não haverá renovação,", "r")]),
         (1.8, [("despertar, avivamento,", "r")]),
         (4.2, [("até que estejamos dispostos", "r")]),
         (5.6, [("a deixar que Ele mais uma vez", "r")]),
         (7.6, [("nos quebre.”", "i")]),
     ]),
-    dict(t0=113.7, author="A. W. Tozer", author_t=9.6, plate=None, lines=[
+    dict(t0=113.7, author="A. W. Tozer", author_t=9.6, lines=[
         (0.25, [("“O verdadeiro ideal cristão", "r")]),
         (2.6, [("não é ser feliz,", "r")]),
         (5.6, [("mas ser ", "r"), ("santo.”", "i", 2.37)]),  # "santo" cai no ataque da música em 121,67 s
@@ -137,57 +140,6 @@ def font(path, size):
     return ImageFont.truetype(path, size)
 
 
-# ------------------------------------------------------------------ imagens da igreja (P&B, câmera lenta)
-PLATE_FPS = 24
-PLATE_SLOW = 0.3
-
-
-def extract_plates():
-    """Quadros da roda de adoração: vídeo vertical -> recorte 16:9 em P&B (dois enquadramentos)."""
-    for name, cy in (("p47", 0.47), ("p50", 0.50), ("p56", 0.56)):
-        d = os.path.join(CACHE, name)
-        if os.path.isdir(d) and len(os.listdir(d)) > 100:
-            continue
-        os.makedirs(d, exist_ok=True)
-        y0 = int(1280 * cy - 405 / 2)
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", A("adoracao.mp4"), "-vf",
-                        f"fps={PLATE_FPS},crop=720:405:0:{y0},hqdn3d=2:2:5:5,scale={W}:{H}:flags=lanczos,format=gray",
-                        "-q:v", "2", os.path.join(d, "%04d.jpg")], check=True)
-
-
-@lru_cache(maxsize=8)
-def _plate_frame(name, idx):
-    d = os.path.join(CACHE, name)
-    n = len(os.listdir(d))
-    return np.asarray(Image.open(os.path.join(d, f"{int(clamp(idx, 0, n - 1)) + 1:04d}.jpg")).convert("L"), np.float32)
-
-
-def _left_shade():
-    xx = np.linspace(0, 1, W, dtype=np.float32)[None, :]
-    yy = np.linspace(-1, 1, BH, dtype=np.float32)[:, None]
-    g = 0.22 + 0.78 * np.clip((xx - 0.18) / 0.72, 0, 1) ** 1.3   # esquerda escura (texto), direita aberta
-    return g * (1 - 0.35 * yy ** 2)
-
-
-LEFT_SHADE = _left_shade()
-
-
-def plate(q, t):
-    """Fundo com imagem real: P&B contrastado, escurecido à esquerda, com aproximação lenta."""
-    s0, cy = q["plate"]
-    name = {0.47: "p47", 0.50: "p50", 0.56: "p56"}[cy]
-    f = (s0 + (t - q["t0"]) * PLATE_SLOW) * PLATE_FPS
-    i0 = int(math.floor(f))
-    a, b = _plate_frame(name, i0), _plate_frame(name, i0 + 1)
-    g = a + (b - a) * (f - i0)
-    z = lerp(1.02, 1.09, prog(t, q["t0"], q["t1"] - q["t0"]))
-    img = Image.fromarray(g, "F").transform((W, BH), Image.AFFINE,
-                                            (1 / z, 0, (W - W / z) / 2, 0, 1 / z, (H - BH / z) / 2), resample=Image.BILINEAR)
-    g = np.asarray(img) / 255.0
-    g = np.clip((g - 0.06) * 1.18, 0, 1) ** 1.25      # contraste de película
-    return g * LEFT_SHADE * 0.78
-
-
 # ------------------------------------------------------------------ texturas analógicas (pré-cálculo)
 rng = np.random.default_rng(1957)
 
@@ -220,19 +172,33 @@ VIG = _vig()
 
 
 def _burn():
-    """Queima de filme: manchas quentes desfocadas (aplicadas em 'screen' nos cortes)."""
+    """Vazamento de luz nos cortes: manchas azuis e prateadas desfocadas (aplicadas em 'screen')."""
     # textura com o dobro da largura: a janela desliza sobre ela, sem emenda
     img = Image.new("RGB", (W // 2, BH // 4), (0, 0, 0))
     d = ImageDraw.Draw(img)
-    for (x, y, r, c) in [(60, 40, 120, (255, 96, 24)), (250, 150, 150, (255, 170, 60)), (420, 60, 130, (255, 60, 20)),
-                         (150, 190, 90, (255, 210, 150)), (350, 20, 70, (255, 230, 190)), (560, 120, 140, (255, 110, 30)),
-                         (700, 40, 110, (255, 190, 90)), (860, 170, 130, (255, 70, 24)), (640, 200, 80, (255, 225, 170))]:
+    for (x, y, r, c) in [(60, 40, 120, (40, 70, 255)), (250, 150, 150, (120, 150, 255)), (420, 60, 130, (30, 50, 230)),
+                         (150, 190, 90, (190, 205, 255)), (350, 20, 70, (225, 232, 255)), (560, 120, 140, (50, 84, 255)),
+                         (700, 40, 110, (150, 175, 255)), (860, 170, 130, (34, 58, 240)), (640, 200, 80, (215, 225, 255))]:
         d.ellipse((x - r, y - r, x + r, y + r), fill=c)
     img = img.filter(ImageFilter.GaussianBlur(34)).resize((W * 2, BH), Image.BICUBIC)
     return np.asarray(img).astype(np.float32) / 255
 
 
 BURN = _burn()
+
+
+def _logo(color, opacity):
+    """Logo da igreja (PNG branco com fundo transparente) recolorida e reduzida para o canto."""
+    src = Image.open(A("logo-atos.png")).convert("RGBA")
+    h = round(src.height * LOGO_W / src.width)
+    alpha = src.getchannel("A").resize((LOGO_W, h), Image.LANCZOS).point(lambda v: int(v * opacity))
+    img = Image.new("RGBA", (LOGO_W, h), color + (0,))
+    img.putalpha(alpha)
+    return img
+
+
+LOGO_LIGHT = _logo(TEXT, 0.9)   # sobre o preto
+LOGO_INK = _logo(INK, 0.95)     # sobre a cartela prata
 
 
 # ------------------------------------------------------------------ tipografia
@@ -254,7 +220,7 @@ def _seg_sprite(text, size, style, color):
 
 
 @lru_cache(maxsize=None)
-def stroke_sprite(width, size, seed):
+def stroke_sprite(width, size, seed, color):
     """Traço à mão (sublinhado): contorno irregular, espessura variável, falhas de pincel seco."""
     r = np.random.default_rng(seed)
     th = max(5.0, size * 0.062)
@@ -276,7 +242,7 @@ def stroke_sprite(width, size, seed):
     fade = np.clip((X / (w * S) - 0.55) / 0.45, 0, 1)[None, :]
     m *= np.clip((tex - 0.42 * fade) * 6 + 0.5, 0, 1)
     a = Image.fromarray((m * 255).astype(np.uint8)).resize((w, h), Image.LANCZOS)
-    img = Image.new("RGBA", (w, h), RED + (0,))
+    img = Image.new("RGBA", (w, h), color + (0,))
     img.putalpha(a)
     return img
 
@@ -293,7 +259,7 @@ def paste(frame, img, x, y):
 
 
 LEAD = 1.17
-MAXW, MAXH = 1400, 560
+MAXW, MAXH = 1300, 560  # a largura deixa o canto direito livre para a logo
 CYB = 392  # centro vertical do bloco, medido dentro da tela de cinema
 
 
@@ -309,7 +275,7 @@ def fit_lines(lines, smax=132):
     return s, height
 
 
-def draw_lines(layer, lines, t, t_base, color, s, height, seed0):
+def draw_lines(layer, lines, t, t_base, color, s, height, seed0, stroke_color):
     """Linhas alinhadas à esquerda; cada trecho sobe de trás da linha de base (máscara)."""
     asc, desc = font(F_SERIF, s).getmetrics()
     base = CYB - height / 2 + s * 0.67
@@ -329,7 +295,7 @@ def draw_lines(layer, lines, t, t_base, color, s, height, seed0):
                 if style == "i":  # traço à mão sob a ênfase
                     ps = e_out_cubic(prog(t, tr + 0.5, 0.6))
                     if ps > 0:
-                        st = stroke_sprite(int(ir - il), s, seed0 * 100 + li * 10 + si)
+                        st = stroke_sprite(int(ir - il), s, seed0 * 100 + li * 10 + si, stroke_color)
                         cut = st.crop((0, 0, max(1, int(st.width * ps)), st.height))
                         paste(layer, cut, x + il - 12, base + s * 0.17 - st.height / 2)
             x += adv
@@ -350,7 +316,7 @@ def draw_author(layer, name, t, ta, y, color):
         d.text((x, y), c, font=f, fill=color + (235,), anchor="ls")
         x += f.getlength(c) + 3
     if n < len(txt) or (t - ta) % 1.0 < 0.5 and t - ta < 3.0:  # cursor
-        d.rectangle((x + 2, y - 29, x + 18, y + 2), fill=RED + (230,))
+        d.rectangle((x + 2, y - 29, x + 18, y + 2), fill=BLUE_L + (235,))
 
 
 # ------------------------------------------------------------------ película
@@ -362,7 +328,7 @@ def film(arr, t, i):
     small = small.filter(ImageFilter.GaussianBlur(5)).resize((W, BH), Image.BILINEAR)
     hl = np.clip(np.asarray(small).astype(np.float32) - 105, 0, None)
     dark = 1 - clamp(float(arr.mean()) / 150)  # cena clara (papel) quase não recebe halação
-    arr = arr + hl * np.array([0.55, 0.22, 0.10], np.float32) * dark
+    arr = arr + hl * np.array([0.16, 0.26, 0.58], np.float32) * dark  # brilho frio, azulado
     # tremor de projetor (gate weave) + suavização leve da imagem digital
     dx = 1.3 * math.sin(t * 1.9) + 0.7 * math.sin(t * 4.7 + 1) + r.normal(0, 0.25)
     dy = 1.0 * math.sin(t * 2.6 + 2) + 0.6 * math.sin(t * 6.1) + r.normal(0, 0.25)
@@ -371,8 +337,8 @@ def film(arr, t, i):
     arr = np.asarray(img.filter(ImageFilter.GaussianBlur(0.55))).astype(np.float32)
     # cintilação de exposição
     arr *= 1 + r.normal(0, 0.012)
-    # pretos levantados e tom quente
-    arr = 9 + arr * 0.955
+    # pretos levantados, puxados para o azul
+    arr = np.array([6, 7, 12], np.float32) + arr * 0.955
     arr *= 1 + (VIG[..., None] - 1) * (0.35 + 0.65 * dark)  # vinheta mais leve no papel
     # grão (mais forte nos meios-tons)
     g = GRAIN[i % len(GRAIN)]
@@ -384,7 +350,7 @@ def film(arr, t, i):
     # poeira: pontos que duram um quadro
     for _ in range(r.poisson(1.6)):
         x, y, rad = r.integers(0, W), r.integers(0, BH), r.uniform(0.8, 2.6)
-        c = (235, 228, 214, int(r.uniform(90, 200))) if r.random() < 0.6 else (0, 0, 0, int(r.uniform(120, 220)))
+        c = (226, 232, 244, int(r.uniform(90, 200))) if r.random() < 0.6 else (0, 0, 0, int(r.uniform(120, 220)))
         d.ellipse((x - rad, y - rad, x + rad, y + rad), fill=c)
     if r.random() < 0.035:  # fio de cabelo
         x, y = r.integers(100, W - 100), r.integers(60, BH - 60)
@@ -397,7 +363,7 @@ def film(arr, t, i):
             life = rs.uniform(0.4, 1.2)
             if k * 0.4 <= t < k * 0.4 + life:
                 x = rs.integers(40, W - 40) + r.normal(0, 0.6)
-                d.line((x, 0, x + rs.normal(0, 2), BH), fill=(240, 232, 218, int(rs.uniform(28, 70))), width=1)
+                d.line((x, 0, x + rs.normal(0, 2), BH), fill=(226, 232, 244, int(rs.uniform(28, 70))), width=1)
     return out
 
 
@@ -408,7 +374,7 @@ def hud(frame, t, qi):
     a = e_out_cubic(prog(t, 0.6, 0.8)) * (1 - e_in_cubic(prog(t, 129.2, 1.2)))
     if a <= 0:
         return
-    col = PAPER + (int(185 * a),)
+    col = SILVER + (int(215 * a),)
     y = 86
 
     def mono(x, text, fill, right=False):
@@ -427,11 +393,11 @@ def hud(frame, t, qi):
         adv = f.getlength("0") + 3
         if (t % 1.0) < 0.6:
             cx = W - X0 - adv * len(txt) - 22
-            d.ellipse((cx - 7, y - 16, cx + 7, y - 2), fill=RED + (int(255 * a),))
+            d.ellipse((cx - 7, y - 16, cx + 7, y - 2), fill=BLUE_L + (int(255 * a),))
         # fio de progresso na barra de baixo
         yb = H - 70
-        d.rectangle((X0, yb, W - X0, yb), fill=PAPER + (int(60 * a),))
-        d.rectangle((X0, yb - 1, X0 + (W - 2 * X0) * clamp(t / T_END), yb + 1), fill=RED + (int(235 * a),))
+        d.rectangle((X0, yb, W - X0, yb), fill=SILVER + (int(70 * a),))
+        d.rectangle((X0, yb - 1, X0 + (W - 2 * X0) * clamp(t / T_END), yb + 1), fill=BLUE_L + (int(245 * a),))
 
 
 # ------------------------------------------------------------------ quadro
@@ -440,32 +406,28 @@ def compose(t: float) -> Image.Image:
     qi = next((k for k, q in enumerate(QUOTES) if q["t0"] <= t < q["t1"]), None)
     end = t >= T_END
 
-    # ---- fundo da tela (tons de cinza 0..1)
+    # ---- fundo da tela: preto de película com uma luz azul suave (ou a cartela prata no final)
     if end:
-        bg = PAPER_TEX * 0.94
-    elif qi is not None and QUOTES[qi]["plate"] and USE_FOOTAGE:
-        bg = plate(QUOTES[qi], t)
+        arr = (PAPER_TEX * 0.96)[..., None] * np.array(CARD, np.float32)
     else:
         breathe = 0.85 + 0.15 * math.sin(t * 0.5)
-        bg = 0.016 + LAMP * 0.085 * breathe
-    tone = np.array(PAPER, np.float32) if end else np.array([255, 247, 232], np.float32)  # P&B levemente quente
-    arr = bg[..., None] * tone
+        arr = np.array([3, 4, 7], np.float32) + (LAMP * breathe)[..., None] * np.array([14, 24, 86], np.float32)
 
     # ---- texto (camada própria, dentro da tela)
     layer = Image.new("RGBA", (W, BH), (0, 0, 0, 0))
     if end:
         s, hgt = fit_lines(END_LINES, 170)
-        draw_lines(layer, END_LINES, t, T_END, INK, s, hgt, 99)
+        draw_lines(layer, END_LINES, t, T_END, INK, s, hgt, 99, BLUE)
     elif qi is not None:
         q = QUOTES[qi]
         s, hgt = fit_lines(q["lines"])
-        seen, last = draw_lines(layer, q["lines"], t, q["t0"], PAPER, s, hgt, qi)
+        seen, last = draw_lines(layer, q["lines"], t, q["t0"], TEXT, s, hgt, qi, BLUE_L)
         # fio vertical de citação, cresce com as linhas
         if seen is not None:
             top = CYB - hgt / 2 - 6
             d = ImageDraw.Draw(layer)
-            d.rectangle((X0 - 44, top, X0 - 41, seen + 8), fill=PAPER + (70,))
-        draw_author(layer, q["author"], t, q["t0"] + q["author_t"], last + s * 0.34 + 74, PAPER)
+            d.rectangle((X0 - 44, top, X0 - 41, seen + 8), fill=SILVER + (95,))
+        draw_author(layer, q["author"], t, q["t0"] + q["author_t"], last + s * 0.34 + 74, SILVER)
     # leve aproximação de câmera no texto
     if qi is not None and not end:
         q = QUOTES[qi]
@@ -474,6 +436,14 @@ def compose(t: float) -> Image.Image:
                                 resample=Image.BICUBIC)
     base = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert("RGBA")
     base.alpha_composite(layer)
+    # logo da igreja, pequena, no canto inferior direito (entra junto com o filme: ganha grão e tremor)
+    la = e_out_cubic(prog(t, 0.8, 1.2))
+    if la > 0:
+        lg = LOGO_INK if end else LOGO_LIGHT
+        if la < 0.999:
+            lg = lg.copy()
+            lg.putalpha(lg.getchannel("A").point(lambda v: int(v * la)))
+        base.alpha_composite(lg, (W - X0 - lg.width, BH - 40 - lg.height))
     arr = np.asarray(base.convert("RGB")).astype(np.float32)
 
     # ---- queima de filme nos cortes
@@ -517,8 +487,6 @@ def encode(master, crf="24", maxrate="2900k"):
 
 def main():
     os.makedirs(CACHE, exist_ok=True)
-    if USE_FOOTAGE:
-        extract_plates()
     args = sys.argv[1:]
     if args and args[0] == "--preview":
         os.makedirs(os.path.join(HERE, "preview"), exist_ok=True)
