@@ -505,11 +505,11 @@ def _frame(i):
     return compose(i / FPS).tobytes()
 
 
-def encode(master, crf="22", maxrate="4200k"):
+def encode(master, crf="24", maxrate="2900k"):
     """Vídeo final: H.264 + o áudio ORIGINAL copiado sem recompressão."""
     subprocess.run([
         "ffmpeg", "-v", "error", "-y", "-i", master, "-i", SRC, "-map", "0:v", "-map", "1:a",
-        "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-maxrate", maxrate, "-bufsize", "10M",
+        "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-maxrate", maxrate, "-bufsize", "9M",
         "-x264-params", "aq-mode=3", "-pix_fmt", "yuv420p", "-profile:v", "high", "-level", "4.2",
         "-c:a", "copy", "-movflags", "+faststart", OUT,
     ], check=True)
