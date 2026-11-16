@@ -52,61 +52,98 @@ BLACK = (6, 7, 11)
 LOGO_W = 178              # largura da logo no canto (px)
 
 # ------------------------------------------------------------------ FRASES (corrigidas, caixa normal)
-# linha: (atraso em s, [(texto, estilo[, atraso extra])]) · "r" romano · "i" itálico com traço à mão
+# Cada frase: n (número), t0 (entrada), autor e linhas. Linha = lista de trechos (texto, estilo):
+# "r" romano · "i" itálico com traço à mão. As linhas são curtas para a letra ficar grande no telão.
+# cont=True: segunda tela da mesma frase (troca suave, sem corte de filme).
+#
+# RITMO DE LEITURA: o tempo de cada linha é calculado, não digitado. A frase entra na cadência de
+# alguém lendo em voz alta (RATE palavras por segundo), com um respiro depois de vírgula e de ponto,
+# e depois fica inteira na tela até o corte, para quem está longe conseguir ler com calma.
+RATE = 2.5
+P_COMMA, P_STOP, P_NONE = 0.3, 0.6, 0.1
+
 QUOTES = [
-    dict(t0=0.5, author="Leonard Ravenhill", author_t=9.1, lines=[
-        (0.25, [("“As únicas pessoas que querem", "r")]),
-        (1.9, [("mudar o Evangelho", "i")]),
-        (4.3, [("são aquelas que não são", "r")]),
-        (6.2, [("mudadas por ele.”", "i")]),
+    dict(n=1, t0=0.5, author="Leonard Ravenhill", lines=[
+        [("“As únicas pessoas que", "r")],
+        [("querem ", "r"), ("mudar o Evangelho", "i")],
+        [("são aquelas que não são", "r")],
+        [("mudadas por ele.”", "i")],
     ]),
-    dict(t0=15.8, author="John Piper", author_t=14.7, lines=[
-        (0.25, [("“Tire minhas pernas,", "r")]),
-        (2.6, [("mas não minha ", "r"), ("Bíblia.", "i", 0.5)]),
-        (6.5, [("Eu posso chegar ao céu sem andar,", "r")]),
-        (10.7, [("mas não sem a ", "r"), ("Palavra de Deus.”", "i", 0.5)]),
+    dict(n=2, t0=15.8, author="John Piper", lines=[
+        [("“Tire minhas pernas,", "r")],
+        [("mas não minha ", "r"), ("Bíblia.", "i")],
+        [("Eu posso chegar ao céu", "r")],
+        [("sem andar, mas não", "r")],
+        [("sem a ", "r"), ("Palavra de Deus.”", "i")],
     ]),
-    dict(t0=34.7, author="John Piper", author_t=13.4, lines=[
-        (0.25, [("“Você quer ouvir a voz de Deus?", "r")]),
-        (3.0, [("Leia a Bíblia.", "i")]),
-        (7.0, [("Você quer ouvir a voz de Deus", "r")]),
-        (8.1, [("audivelmente?", "r")]),
-        (10.6, [("Leia a Bíblia em voz alta.”", "i")]),
+    dict(n=3, t0=34.7, author=None, lines=[
+        [("“Você quer ouvir", "r")],
+        [("a voz de Deus?", "r")],
+        [("Leia a Bíblia.", "i")],
     ]),
-    dict(t0=54.4, author="Billy Graham", author_t=11.2, lines=[
-        (0.25, [("“Quando você se lembrar", "r")]),
-        (2.2, [("de onde Deus te tirou,", "i")]),
-        (5.6, [("vai parar de duvidar", "r")]),
-        (8.0, [("de aonde Ele pode te levar.”", "i")]),
+    dict(n=3, t0=44.7, cont=True, author="John Piper", lines=[
+        [("Você quer ouvir a voz", "r")],
+        [("de Deus audivelmente?", "r")],
+        [("Leia a Bíblia", "i")],
+        [("em voz alta.”", "i")],
     ]),
-    dict(t0=73.2, author="Leonard Ravenhill", author_t=8.0, lines=[
-        (0.25, [("“Se fracassarmos na ", "r"), ("oração,", "i", 0.45)]),
-        (2.5, [("fracassaremos em toda", "r")]),
-        (4.2, [("frente de batalha.”", "r")]),
+    dict(n=4, t0=56.4, author="Billy Graham", lines=[
+        [("“Quando você se lembrar", "r")],
+        [("de onde Deus te tirou,", "i")],
+        [("vai parar de duvidar", "r")],
+        [("de aonde Ele pode te levar.”", "i")],
     ]),
-    dict(t0=86.8, author="David Wilkerson", author_t=8.6, lines=[
-        (0.25, [("“Estou cansado da música", "r")]),
-        (2.2, [("que faz jovens pularem", "r")]),
-        (4.6, [("em vez de ", "r"), ("dobrarem", "i", 0.4)]),
-        (5.9, [("seus joelhos.”", "i")]),
+    dict(n=5, t0=73.2, author="Leonard Ravenhill", lines=[
+        [("“Se fracassarmos na ", "r"), ("oração,", "i")],
+        [("fracassaremos em toda", "r")],
+        [("frente de batalha.”", "r")],
     ]),
-    dict(t0=100.1, author="David Wilkerson", author_t=9.9, lines=[
-        (0.25, [("“Não haverá renovação,", "r")]),
-        (1.8, [("despertar, avivamento,", "r")]),
-        (4.2, [("até que estejamos dispostos", "r")]),
-        (5.6, [("a deixar que Ele mais uma vez", "r")]),
-        (7.6, [("nos quebre.”", "i")]),
+    dict(n=6, t0=84.8, author="David Wilkerson", lines=[
+        [("“Estou cansado da música", "r")],
+        [("que faz jovens pularem", "r")],
+        [("em vez de ", "r"), ("dobrarem", "i")],
+        [("seus joelhos.”", "i")],
     ]),
-    dict(t0=113.7, author="A. W. Tozer", author_t=9.6, lines=[
-        (0.25, [("“O verdadeiro ideal cristão", "r")]),
-        (2.6, [("não é ser feliz,", "r")]),
-        (5.6, [("mas ser ", "r"), ("santo.”", "i", 2.37)]),  # "santo" cai no ataque da música em 121,67 s
+    dict(n=7, t0=97.8, author="David Wilkerson", lines=[
+        [("“Não haverá renovação,", "r")],
+        [("despertar, avivamento,", "r")],
+        [("até que estejamos dispostos", "r")],
+        [("a deixar que Ele mais uma vez", "r")],
+        [("nos quebre.”", "i")],
+    ]),
+    dict(n=8, t0=113.7, author="A. W. Tozer", lines=[
+        [("“O verdadeiro ideal cristão", "r")],
+        [("não é ser feliz,", "r")],
+        [("mas ser ", "r"), ("santo.”", "i")],
     ]),
 ]
-for _i, _q in enumerate(QUOTES):  # cada frase vai até o corte para a próxima
-    _q["t1"] = QUOTES[_i + 1]["t0"] if _i + 1 < len(QUOTES) else T_END
-END_LINES = [(0.15, [("Nosso culto", "r")]), (0.55, [("se inicia agora!", "i")])]
-CUTS = [q["t0"] for q in QUOTES[1:]] + [T_END]
+NQ = max(q["n"] for q in QUOTES)
+
+
+def reading_times(lines):
+    """Entrada de cada linha no ritmo de quem lê em voz alta. Devolve (linhas com tempo, fim da leitura)."""
+    out, t = [], 0.3
+    for segs in lines:
+        timed, before = [], 0
+        for text, style in segs:
+            # a ênfase no meio da linha chega um instante depois, como na fala
+            delay = max(0.3, before / RATE * 0.55) if style == "i" and before else 0.0
+            timed.append((text, style, delay))
+            before += len(text.split())
+        out.append((t, timed))
+        last = "".join(sg[0] for sg in segs).rstrip(" ”")[-1]
+        t += before / RATE + (P_STOP if last in ".?!" else P_COMMA if last in ",;:" else P_NONE)
+    return out, t
+
+
+for _i, _q in enumerate(QUOTES):
+    _q["t1"] = QUOTES[_i + 1]["t0"] if _i + 1 < len(QUOTES) else T_END  # vai até o corte para a próxima
+    _q["fade"] = _i + 1 < len(QUOTES) and bool(QUOTES[_i + 1].get("cont"))  # some suave antes da 2ª tela
+    _q["lines"], _end = reading_times(_q["lines"])
+    _q["author_t"] = _end + 0.3  # o autor é datilografado quando a leitura termina
+END_LINES = [(0.15, [("Nosso culto", "r", 0.0)]), (0.55, [("se inicia agora!", "i", 0.0)])]
+CUTS = [q["t0"] for q in QUOTES[1:] if not q.get("cont")] + [T_END]
+ONSETS = [2.37, 9.43, 11.26, 30.49, 34.69, 73.21, 75.7, 81.18, 121.67]  # ataques da música: pulso de luz
 
 
 # ------------------------------------------------------------------ util
@@ -259,32 +296,42 @@ def paste(frame, img, x, y):
 
 
 LEAD = 1.17
-MAXW, MAXH = 1300, 560  # a largura deixa o canto direito livre para a logo
-CYB = 392  # centro vertical do bloco, medido dentro da tela de cinema
+W_WIDE, W_LOGO = 1500, 1300  # largura máxima: linhas livres / linhas na altura da logo
+MAXH = 600
+LOGO_TOP = BH - 40 - round(122 * LOGO_W / 200)  # topo da logo, dentro da tela
 
 
-def fit_lines(lines, smax=132):
+def fit_lines(lines, has_author=False, smax=124):
+    """Maior letra em que o bloco (frase + autor) cabe centrado na tela, sem encostar na logo.
+    Devolve (tamanho, altura do bloco, baseline da 1ª linha)."""
     s = smax
     while s > 40:
-        ws = [sum(font(F_ITAL if sg[1] == "i" else F_SERIF, s).getlength(sg[0]) for sg in segs) for _, segs in lines]
         cap = s * 0.67
         height = cap + (len(lines) - 1) * s * LEAD
-        if max(ws) <= MAXW and height <= MAXH:
-            return s, height
+        extra = s * 0.34 + 66 if has_author else 0
+        top = (BH - height - extra) / 2 - 4
+        base0 = top + cap
+        ok = height <= MAXH and top >= 58  # respiro em cima e embaixo
+        for li, (_, segs) in enumerate(lines):
+            w = sum(font(F_ITAL if sg[1] == "i" else F_SERIF, s).getlength(sg[0]) for sg in segs)
+            bottom = base0 + li * s * LEAD + s * 0.25
+            if w > (W_LOGO if bottom > LOGO_TOP - 70 else W_WIDE):  # linha perto da logo: mais curta
+                ok = False
+        if ok:
+            return s, height, base0
         s -= 2
-    return s, height
+    return s, height, base0
 
 
-def draw_lines(layer, lines, t, t_base, color, s, height, seed0, stroke_color):
+def draw_lines(layer, lines, t, t_base, color, s, base0, seed0, stroke_color):
     """Linhas alinhadas à esquerda; cada trecho sobe de trás da linha de base (máscara)."""
     asc, desc = font(F_SERIF, s).getmetrics()
-    base = CYB - height / 2 + s * 0.67
+    base = base0
     last_seen = None
     for li, (off, segs) in enumerate(lines):
         x = X0
-        for si, sg in enumerate(segs):
-            text, style = sg[0], sg[1]
-            tr = t_base + off + (sg[2] if len(sg) > 2 else 0.0)
+        for si, (text, style, delay) in enumerate(segs):
+            tr = t_base + off + delay
             img, adv, il, ir, pad = seg_sprite(text, s, style, color)
             if t >= tr:
                 p = e_out_expo(prog(t, tr, 0.75))
@@ -385,7 +432,7 @@ def hud(frame, t, qi):
             d.text((x + (adv - f.getlength(c)) / 2, y), c, font=f, fill=fill, anchor="ls")
             x += adv
     if qi is not None:
-        mono(X0, f"{qi + 1:02d}/{len(QUOTES):02d}", col)
+        mono(X0, f"{QUOTES[qi]['n']:02d}/{NQ:02d}", col)
     if COUNTDOWN:
         left = max(0, int(math.ceil(T_END - t)))
         txt = f"COMEÇA EM {left // 60:02d}:{left % 60:02d}" if t < T_END else "AGORA"
@@ -411,28 +458,32 @@ def compose(t: float) -> Image.Image:
         arr = (PAPER_TEX * 0.96)[..., None] * np.array(CARD, np.float32)
     else:
         breathe = 0.85 + 0.15 * math.sin(t * 0.5)
+        breathe += 0.5 * max([math.exp(-(t - t0) * 2.2) for t0 in ONSETS if 0 <= t - t0 < 2.5], default=0.0)
         arr = np.array([3, 4, 7], np.float32) + (LAMP * breathe)[..., None] * np.array([14, 24, 86], np.float32)
 
     # ---- texto (camada própria, dentro da tela)
     layer = Image.new("RGBA", (W, BH), (0, 0, 0, 0))
     if end:
-        s, hgt = fit_lines(END_LINES, 170)
-        draw_lines(layer, END_LINES, t, T_END, INK, s, hgt, 99, BLUE)
+        s, hgt, base0 = fit_lines(END_LINES, False, 170)
+        draw_lines(layer, END_LINES, t, T_END, INK, s, base0, 99, BLUE)
     elif qi is not None:
         q = QUOTES[qi]
-        s, hgt = fit_lines(q["lines"])
-        seen, last = draw_lines(layer, q["lines"], t, q["t0"], TEXT, s, hgt, qi, BLUE_L)
+        s, hgt, base0 = fit_lines(q["lines"], bool(q["author"]))
+        seen, last = draw_lines(layer, q["lines"], t, q["t0"], TEXT, s, base0, qi, BLUE_L)
         # fio vertical de citação, cresce com as linhas
         if seen is not None:
-            top = CYB - hgt / 2 - 6
             d = ImageDraw.Draw(layer)
-            d.rectangle((X0 - 44, top, X0 - 41, seen + 8), fill=SILVER + (95,))
-        draw_author(layer, q["author"], t, q["t0"] + q["author_t"], last + s * 0.34 + 74, SILVER)
-    # leve aproximação de câmera no texto
-    if qi is not None and not end:
-        q = QUOTES[qi]
+            d.rectangle((X0 - 44, base0 - s * 0.67 - 6, X0 - 41, seen + 8), fill=SILVER + (95,))
+        if q["author"]:
+            draw_author(layer, q["author"], t, q["t0"] + q["author_t"], last + s * 0.34 + 66, SILVER)
+        if q["fade"]:  # primeira tela de uma frase em duas: some suave antes da segunda
+            k = 1 - e_in_cubic(prog(t, q["t1"] - 0.45, 0.4))
+            if k < 0.999:
+                layer.putalpha(layer.getchannel("A").point(lambda v: int(v * k)))
+        # leve aproximação de câmera no texto
         z = lerp(1.0, 1.03, prog(t, q["t0"], q["t1"] - q["t0"]))
-        layer = layer.transform((W, BH), Image.AFFINE, (1 / z, 0, X0 * (1 - 1 / z), 0, 1 / z, CYB * (1 - 1 / z)),
+        cy = base0 - s * 0.67 + hgt / 2
+        layer = layer.transform((W, BH), Image.AFFINE, (1 / z, 0, X0 * (1 - 1 / z), 0, 1 / z, cy * (1 - 1 / z)),
                                 resample=Image.BICUBIC)
     base = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert("RGBA")
     base.alpha_composite(layer)

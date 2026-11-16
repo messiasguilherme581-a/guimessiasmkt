@@ -61,11 +61,35 @@ A opção A (dourado com brilho, partículas e raios de luz) tem os sinais típi
 - **Logo:** `assets/logo-atos.png`, tirada do arquivo "ATOS - LOGO - PNG" do Canva na versão de 200 px de largura, que é a que o conector entrega. Serve para o canto do vídeo (178 px). Para usar a logo maior, é preciso o arquivo original.
 - **Sem imagens do acampamento:** a primeira versão desta opção usava a roda de adoração em três frases; foi retirada a pedido.
 - **Contagem regressiva:** fica na barra de cima, em máquina de escrever. Para tirar, `COUNTDOWN = False`.
-- **Textos e tempos:** as mesmas correções e os mesmos tempos da opção A; aqui em caixa normal ("Evangelho", "Bíblia", "Palavra de Deus" e "Ele" com maiúscula).
+- **Textos:** as mesmas correções da opção A; aqui em caixa normal ("Evangelho", "Bíblia", "Palavra de Deus" e "Ele" com maiúscula).
 
 Para gerar: `python3 render_b.py` (aceita `--preview`).
 
-## Tempos
+## Ritmo de leitura da opção B (telão)
+
+Pensado para quem está sentado longe da tela:
+
+- **A frase entra como alguém lendo em voz alta:** 2,5 palavras por segundo, com um respiro depois de vírgula (0,3 s) e de ponto (0,6 s). Antes, as linhas entravam com pausas longas entre elas.
+- **Depois fica inteira na tela** até o corte, por pelo menos 5 segundos.
+- **Letra maior:** de 84–112 px para 106–124 px, com linhas mais curtas.
+- **A frase mais longa (3) vai em duas telas**, com troca suave, para não diminuir a letra.
+
+| Frase | Entra | Completa em | Fica inteira | Letra |
+|---|---|---|---|---|
+| 1 · Ravenhill | 0:00 | 6,6 s | 8,8 s | 124 px |
+| 2 · Piper | 0:16 | 9,0 s | 9,9 s | 106 px |
+| 3 · Piper (tela 1) | 0:35 | 4,6 s | 5,4 s | 124 px |
+| 3 · Piper (tela 2) | 0:45 | 6,2 s | 5,4 s | 124 px |
+| 4 · Graham | 0:56 | 6,8 s | 10,1 s | 110 px |
+| 5 · Ravenhill | 1:13 | 4,2 s | 7,3 s | 120 px |
+| 6 · Wilkerson | 1:25 | 6,2 s | 6,8 s | 124 px |
+| 7 · Wilkerson | 1:38 | 8,2 s | 7,7 s | 106 px |
+| 8 · Tozer | 1:54 | 5,1 s | 7,2 s | 124 px |
+| Cartela final | 2:06 | | até 2:11 | |
+
+Os tempos saem de um cálculo, não de números digitados: para deixar a leitura mais lenta ou mais rápida, mude `RATE` em `render_b.py`.
+
+## Tempos da opção A
 
 | Frase | Entra | Sai |
 |---|---|---|
