@@ -6,6 +6,7 @@ Nova versão do vídeo de abertura do culto (`assets/original.mp4`): as mesmas 8
 |---|---|
 | `preludio-culto.mp4` | Vídeo final: 1920x1080, 30 fps, 2 min 11 s, cerca de 36 MB, com o áudio original copiado sem recompressão |
 | `preludio-culto-opcao-b.mp4` | **Opção B (escolhida)**: estilo documentário de película, nas cores e com a logo da Igreja Evangélica Atos |
+| `preludio-culto.mp3` | Só o áudio do prelúdio (a música original), em MP3 192 kbps, 2 min 11 s |
 | `render.py` | Gera a opção A; as frases ficam no bloco `QUOTES` |
 | `render_b.py` | Gera a opção B |
 | `assets/logo-atos.png` | Logo da Igreja Evangélica Atos (branca, fundo transparente) |
