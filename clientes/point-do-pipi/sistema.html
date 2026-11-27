@@ -109,6 +109,9 @@ input.i:focus,select.i:focus,textarea.i:focus{border-color:var(--laranja);outlin
 .itens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
 .itens li{display:flex;justify-content:space-between;gap:10px}
 .itens li b{color:var(--laranja);margin-right:6px}
+.itens li.op{display:block;font-size:13px;color:var(--papel-2);padding-left:26px;margin-top:-2px;font-weight:600}
+.itens.big li.op{font-size:15px;color:var(--papel)}
+.itens li.op.ob{color:#ff8a72;font-weight:700}
 .itens.big li{font-size:18px;font-weight:800}
 .obs{background:rgba(224,71,43,.12);border-left:3px solid var(--critico);padding:7px 10px;border-radius:6px;font-weight:700}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13.5px}
@@ -409,7 +412,7 @@ function cupomPedido(p,cols,via){
   if(p.fone) add("Fone: "+foneFmt(p.fone));
   if(p.endereco){ quebrar(`End: ${p.endereco.rua}, ${p.endereco.numero}`,cols).forEach(t=>add(t,{bold:1})); quebrar("Bairro: "+p.endereco.bairro,cols).forEach(t=>add(t,{bold:1})); if(p.endereco.ref) quebrar("Ref: "+p.endereco.ref,cols).forEach(t=>add(t)); }
   if(p.cliente||p.fone||p.endereco) sep();
-  for(const it of p.itens){ const preco=v2(it.qtd*it.preco); const ls=quebrar(`${it.qtd}x ${it.nome}`,cols-preco.length-1); add(par(ls[0],preco,cols),{bold:1}); ls.slice(1).forEach(t=>add("   "+t,{bold:1})); }
+  for(const it of p.itens){ const preco=v2(it.qtd*it.preco); const ls=quebrar(`${it.qtd}x ${it.nome}`,cols-preco.length-1); add(par(ls[0],preco,cols),{bold:1}); ls.slice(1).forEach(t=>add("   "+t,{bold:1})); detalhes(it,cols,add); }
   if(p.obs){ sep(); quebrar("OBS: "+p.obs,cols).forEach(t=>add(t,{bold:1})); }
   sep(); add(par("Subtotal",v2(p.subtotal),cols)); if(p.taxa) add(par("Entrega",v2(p.taxa),cols));
   add(par("TOTAL","R$ "+v2(p.total),cols),{bold:1});
@@ -423,7 +426,7 @@ function cupomComanda(p,cols){
   add(p.tipo==="mesa"?`MESA ${String(p.mesa).padStart(2,"0")}`:TIPO_NOME[p.tipo].toUpperCase(),{center:1,big:1});
   add(par(nPed(p.numero),hora(p.criadoEm),cols));
   const f=membro(p.funcionario); if(f) add("Garcom/atend.: "+f.nome);
-  sep(); for(const it of p.itens) quebrar(`${it.qtd}x ${it.nome}`,cols).forEach((t,i)=>add(i?"   "+t:t,{bold:1,big:cols>=40}));
+  sep(); for(const it of p.itens){ quebrar(`${it.qtd}x ${it.nome}`,cols).forEach((t,i)=>add(i?"   "+t:t,{bold:1,big:cols>=40})); detalhes(it,cols,add,true); }
   if(p.obs){ sep(); quebrar("OBS: "+p.obs,cols).forEach(t=>add(t,{bold:1})); }
   sep(); return L;
 }
@@ -433,12 +436,13 @@ function cupomConta(m,ped,cols){
   add(par(`MESA ${String(m.n).padStart(2,"0")}`,dataCupom(new Date().toISOString()),cols),{bold:1});
   const g=membro(m.garcom); if(g) add("Garcom: "+g.nome); if(m.pessoas) add("Pessoas: "+m.pessoas);
   sep();
-  const ag={}; for(const p of ped) for(const it of p.itens){ const k=it.nome+"|"+it.preco; ag[k]=ag[k]||{...it,qtd:0}; ag[k].qtd+=it.qtd; }
-  let total=0; for(const it of Object.values(ag)){ total+=it.qtd*it.preco; add(par(`${it.qtd}x ${it.nome}`,v2(it.qtd*it.preco),cols)); }
+  const ag={}; for(const p of ped) for(const it of p.itens){ const k=it.nome+"|"+it.preco+"|"+(it.opcoes||[]).join(","); ag[k]=ag[k]||{...it,qtd:0}; ag[k].qtd+=it.qtd; }
+  let total=0; for(const it of Object.values(ag)){ total+=it.qtd*it.preco; add(par(`${it.qtd}x ${it.nome}`,v2(it.qtd*it.preco),cols)); (it.opcoes||[]).forEach(o=>quebrar("  + "+o,cols).forEach(t=>add(t))); }
   sep(); add(par("TOTAL","R$ "+v2(total),cols),{bold:1,big:1});
   if(m.pessoas>1) add(par(`Dividido por ${m.pessoas}`,"R$ "+v2(total/m.pessoas),cols));
   sep(); add("Nao e documento fiscal",{center:1}); add("Obrigado pela preferencia!",{center:1}); return L;
 }
+function detalhes(it,cols,add,forte){ (it.opcoes||[]).forEach(o=>quebrar("  + "+o,cols).forEach(t=>add(t,forte?{bold:1}:{}))); if(it.obs) quebrar("  OBS: "+it.obs,cols).forEach(t=>add(t,{bold:1})); }
 function escpos(linhas,cols){
   const b=[], push=(...x)=>b.push(...x);
   push(0x1B,0x40);
@@ -608,6 +612,7 @@ function atualizarBadges(){
 }
 
 /* ---------- cartão de pedido ---------- */
+const opsHTML = i => (i.opcoes||[]).map(o=>`<li class="op">▸ ${esc(o)}</li>`).join("")+(i.obs?`<li class="op ob">▸ Obs: ${esc(i.obs)}</li>`:"");
 const waCliente=(p,txt)=>"https://wa.me/55"+p.fone+"?text="+encodeURIComponent(txt);
 function cardPedido(p,modo){
   const f=membro(p.funcionario), alvo=p.tipo==="mesa"?`Mesa ${p.mesa}`:(p.cliente||"Balcão");
@@ -616,7 +621,7 @@ function cardPedido(p,modo){
   if(modo==="cozinha"){
     const mins=minDesde(p.aceitoEm||p.criadoEm), cls=mins>=25?"critico":mins>=15?"alerta":"";
     return `<article class="ped ${cls==="critico"?"atraso":""}"><div class="ph"><span class="n num">${nPed(p.numero)}</span><div class="meta"><b>${esc(alvo)}</b>${f?esc(f.nome):""}</div><span class="timer num ${cls}">⏱ ${mins} min</span><span class="tipo ${p.tipo}">${TIPO_NOME[p.tipo]}</span></div>
-      <div class="pb"><ul class="itens big">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span></li>`).join("")}</ul>${p.obs?`<div class="obs">⚠️ ${esc(p.obs)}</div>`:""}</div>
+      <div class="pb"><ul class="itens big">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span></li>${opsHTML(i)}`).join("")}</ul>${p.obs?`<div class="obs">⚠️ ${esc(p.obs)}</div>`:""}</div>
       <div class="acts"><button class="b go" type="button" data-act="pronto" data-n="${p.numero}">✅ Pronto</button></div></article>`;
   }
   if(p.status==="novo") acts=`<button class="b go" type="button" data-act="aceitar" data-n="${p.numero}">✅ Aceitar e imprimir</button><button class="b no" type="button" data-act="recusar" data-n="${p.numero}">Recusar</button>${p.fone?`<a class="b wa" href="${waCliente(p,`Olá ${p.cliente}! Sobre o seu pedido ${nPed(p.numero)} no Point do Pipi:`)}" target="_blank" rel="noopener">💬 Falar</a>`:""}`;
@@ -625,7 +630,7 @@ function cardPedido(p,modo){
   else acts=`<button class="b full" type="button" data-act="reimprimir" data-n="${p.numero}">🧾 Reimprimir</button>`;
   return `<article class="ped ${p.status==="novo"?"novo":""}">
     <div class="ph"><span class="n num">${nPed(p.numero)}</span><div class="meta"><b>${esc(alvo)}</b><span class="num">${hora(p.criadoEm)}${p.fone?" · "+foneFmt(p.fone):""}${f?" · "+esc(f.nome):""}${p.status==="recusado"?" · recusado":""}</span></div><span class="tipo ${p.tipo}">${TIPO_NOME[p.tipo]}</span></div>
-    <div class="pb"><ul class="itens">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span><span class="num">${brl(i.qtd*i.preco)}</span></li>`).join("")}</ul>
+    <div class="pb"><ul class="itens">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span><span class="num">${brl(i.qtd*i.preco)}</span></li>${opsHTML(i)}`).join("")}</ul>
       ${p.obs?`<div class="obs">⚠️ ${esc(p.obs)}</div>`:""}
       <dl class="kv">${end}${p.tipo!=="mesa"?`<dt>Pagamento</dt><dd>${esc(p.pagamento)}${p.troco?` · troco p/ R$ ${esc(p.troco)}`:""}</dd>`:""}</dl>
       <div class="total num"><span>Total${p.taxa?` (entrega ${brl(p.taxa)})`:""}</span><span>${brl(p.total)}</span></div></div>

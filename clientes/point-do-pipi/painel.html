@@ -69,6 +69,8 @@ button,select,input{font:inherit;color:inherit}
 .itens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .itens li{display:flex;justify-content:space-between;gap:10px}
 .itens li b{color:var(--laranja);margin-right:6px}
+.itens li.op{display:block;font-size:13px;color:var(--papel-2);padding-left:26px;margin-top:-2px}
+.itens li.op.ob{color:#ff8a72;font-weight:700}
 .obs{background:rgba(224,71,43,.12);border-left:3px solid var(--tomate);padding:8px 10px;border-radius:6px;font-weight:700}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13.5px}
 .kv dt{color:var(--papel-2)}
@@ -263,6 +265,8 @@ function cupom(p,cols,via){
     const linhas=quebrar(`${it.qtd}x ${it.nome}`,w);
     add(par(linhas[0],preco,cols),{bold:1});
     linhas.slice(1).forEach(t=>add("   "+t,{bold:1}));
+    (it.opcoes||[]).forEach(o=>quebrar("  + "+o,cols).forEach(t=>add(t)));
+    if(it.obs) quebrar("  OBS: "+it.obs,cols).forEach(t=>add(t,{bold:1}));
   }
   if(p.obs){ sep(); quebrar("OBS: "+p.obs,cols).forEach(t=>add(t,{bold:1})); }
   sep();
@@ -443,7 +447,7 @@ function card(p){
       <div class="meta"><b>${esc(p.cliente)}</b><span class="num">${hora(p.criadoEm)} · ${foneFmt(p.fone)}${p.status==="recusado"?" · recusado":""}</span></div>
       <span class="tipo ${ent?"ent":"ret"}">${ent?"Entrega":"Retirada"}</span></div>
     <div class="pb">
-      <ul class="itens">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span><span class="num">${brl(i.qtd*i.preco)}</span></li>`).join("")}</ul>
+      <ul class="itens">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span><span class="num">${brl(i.qtd*i.preco)}</span></li>${(i.opcoes||[]).map(o=>`<li class="op">▸ ${esc(o)}</li>`).join("")}${i.obs?`<li class="op ob">▸ Obs: ${esc(i.obs)}</li>`:""}`).join("")}</ul>
       ${p.obs?`<div class="obs">⚠️ ${esc(p.obs)}</div>`:""}
       <dl class="kv">${end}<dt>Pagamento</dt><dd>${esc(p.pagamento)}</dd>${troco}</dl>
       <div class="total num"><span>Total${p.taxa?` (entrega ${brl(p.taxa)})`:""}</span><span>${brl(p.total)}</span></div>
