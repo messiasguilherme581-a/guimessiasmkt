@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Proposta Comercial · Point do Pipi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+@page{size:A4;margin:0}
+:root{
+  --preto:#121110; --preto-2:#1c1a17; --laranja:#ff9312; --laranja-claro:#fff1e0;
+  --papel:#fbf8f3; --tinta:#1d1a16; --tinta-2:#6b6259; --linha:#e7dfd4; --verde:#2f8f46; --vermelho:#c2402a;
+  --display:"Bowlby One","Arial Black",Impact,sans-serif; --body:"Manrope",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#888}
+body{font-family:var(--body);color:var(--tinta);font-size:10.5pt;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pg{width:210mm;height:297mm;margin:0 auto 10mm;background:var(--papel);position:relative;overflow:hidden;page-break-after:always;padding:18mm 17mm 16mm;display:flex;flex-direction:column}
+@media print{html,body{background:none}.pg{margin:0}}
+h1,h2{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:1.02;margin:0;letter-spacing:-.2px}
+h2{font-size:25pt}
+h2 em{font-style:normal;color:var(--laranja)}
+h3{margin:0;font-size:12.5pt;font-weight:800}
+p{margin:0}
+.eyebrow{font-size:8.5pt;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--laranja);margin-bottom:6px}
+.lead{font-size:12pt;color:var(--tinta-2);margin-top:8px;max-width:150mm}
+.num{font-variant-numeric:tabular-nums}
+.rodape{position:absolute;left:17mm;right:17mm;bottom:9mm;display:flex;justify-content:space-between;font-size:8pt;color:var(--tinta-2);border-top:1px solid var(--linha);padding-top:3mm}
+.gap{display:flex;flex-direction:column;gap:6mm}
+
+/* capa */
+.capa{background:var(--preto);color:#f5ece0;padding:0}
+.capa .foto{position:absolute;inset:0;background:url(../img/bacon.jpg) center 40%/cover;opacity:.38;filter:saturate(1.1)}
+.capa .sombra{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,17,16,.55) 0%,rgba(18,17,16,.35) 35%,rgba(18,17,16,.92) 68%,#121110 100%)}
+.capa .in{position:relative;height:100%;display:flex;flex-direction:column;padding:22mm 18mm 18mm}
+.capa .logo{width:92mm}
+.capa .tit{margin-top:auto}
+.capa h1{font-size:40pt;color:#fff}
+.capa h1 em{font-style:normal;color:var(--laranja)}
+.capa .sub{font-size:13.5pt;color:#d9cbb9;margin-top:6mm;max-width:150mm}
+.capa .meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14mm;padding-top:6mm;border-top:1px solid rgba(255,255,255,.18);font-size:9.5pt;color:#bfae9b}
+.capa .meta b{color:#fff;display:block;font-size:11pt}
+.selo{display:inline-block;background:var(--laranja);color:var(--preto);font-weight:800;font-size:9pt;letter-spacing:.6px;text-transform:uppercase;padding:2mm 4mm;border-radius:2mm;margin-bottom:6mm}
+
+/* tabelas */
+table{width:100%;border-collapse:collapse;font-size:10pt}
+th{text-align:left;font-size:8pt;letter-spacing:.8px;text-transform:uppercase;color:var(--tinta-2);font-weight:800;padding:2.4mm 2.5mm;border-bottom:1.5px solid var(--tinta)}
+td{padding:2.6mm 2.5mm;border-bottom:1px solid var(--linha)}
+td.r,th.r{text-align:right}
+tr.dest td{background:var(--laranja-claro);font-weight:800}
+.taxas{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.taxa{background:#fff;border:1px solid var(--linha);border-radius:3mm;padding:4mm}
+.taxa b{display:block;font-family:var(--display);font-weight:400;font-size:22pt;color:var(--vermelho);line-height:1}
+.taxa span{display:block;font-size:8.8pt;color:var(--tinta-2);margin-top:2mm}
+.nota{font-size:8.3pt;color:var(--tinta-2)}
+.grande{background:var(--preto);color:#f5ece0;border-radius:4mm;padding:7mm 8mm;display:flex;align-items:center;gap:8mm}
+.grande b{font-family:var(--display);font-weight:400;font-size:30pt;color:var(--laranja);line-height:1;white-space:nowrap}
+.grande p{font-size:11pt;color:#d9cbb9}
+.grande p strong{color:#fff}
+
+/* fluxo da economia */
+.fluxo{display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch}
+.passo{background:#fff;border:1px solid var(--linha);padding:4.5mm 4mm;position:relative}
+.passo:first-child{border-radius:3mm 0 0 3mm}.passo:last-child{border-radius:0 3mm 3mm 0;background:var(--laranja);border-color:var(--laranja)}
+.passo + .passo{border-left:0}
+.passo .n{font-family:var(--display);font-size:9pt;color:var(--laranja);letter-spacing:1px}
+.passo:last-child .n{color:var(--preto)}
+.passo h3{font-size:11pt;margin:1.5mm 0}
+.passo p{font-size:9pt;color:var(--tinta-2)}
+.passo:last-child p{color:var(--preto)}
+.passo:not(:last-child)::after{content:"";position:absolute;right:-3mm;top:50%;width:5mm;height:5mm;background:#fff;border-right:1px solid var(--linha);border-top:1px solid var(--linha);transform:translateY(-50%) rotate(45deg);z-index:1}
+.conta{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.barras{display:flex;flex-direction:column;gap:3.2mm}
+.barra{display:grid;grid-template-columns:44mm 1fr 26mm;align-items:center;gap:3mm;font-size:9.6pt}
+.barra .t{height:6mm;background:#efe8de;border-radius:1.5mm;overflow:hidden}
+.barra .t i{display:block;height:100%;border-radius:0 1.5mm 1.5mm 0}
+.barra .v{text-align:right;font-weight:800}
+.lista{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2.4mm}
+.lista li{padding-left:6mm;position:relative;font-size:10pt}
+.lista li::before{content:"";position:absolute;left:0;top:1.6mm;width:3mm;height:3mm;border-radius:50%;background:var(--laranja)}
+.box{background:#fff;border:1px solid var(--linha);border-radius:3mm;padding:5mm}
+
+/* telas */
+.telas{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm}
+.tela{display:flex;flex-direction:column;gap:2mm}
+.tela img{width:100%;border-radius:3mm;border:1px solid #2a2622;display:block;aspect-ratio:390/600;object-fit:cover;object-position:top}
+.tela b{font-size:9.5pt}
+.tela span{font-size:8.5pt;color:var(--tinta-2);line-height:1.35}
+.grupo{font-size:8.5pt;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--tinta-2);border-bottom:1px solid var(--linha);padding-bottom:1.5mm;margin-bottom:3mm}
+
+/* pacotes */
+.pacotes{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;align-items:stretch}
+.pac{background:#fff;border:1.5px solid var(--linha);border-radius:4mm;padding:5.5mm 5mm;display:flex;flex-direction:column;gap:3mm;position:relative}
+.pac.rec{border-color:var(--laranja);box-shadow:0 0 0 2px var(--laranja)}
+.pac .flag{position:absolute;top:-3.4mm;left:5mm;background:var(--laranja);color:var(--preto);font-size:7.8pt;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:1mm 3mm;border-radius:1.5mm}
+.pac h3{font-family:var(--display);font-weight:400;font-size:17pt;text-transform:uppercase}
+.pac .para{font-size:9pt;color:var(--tinta-2);min-height:10mm}
+.preco{border-top:1px solid var(--linha);border-bottom:1px solid var(--linha);padding:3mm 0}
+.preco .m{font-size:9pt;color:var(--tinta-2)}
+.preco .m b{font-family:var(--display);font-weight:400;font-size:21pt;color:var(--tinta);margin-right:1mm}
+.preco .i{font-size:9pt;color:var(--tinta-2);margin-top:1mm}
+.preco .i b{color:var(--tinta)}
+.pac ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:1.3mm;font-size:8.8pt;line-height:1.35}
+.pac li{padding-left:5mm;position:relative}
+.pac li::before{content:"✓";position:absolute;left:0;color:var(--verde);font-weight:800}
+.pac li.mais{font-weight:800;padding-left:0}
+.pac li.mais::before{content:none}
+.comum{margin-top:5mm;display:grid;grid-template-columns:repeat(3,1fr);gap:2mm 6mm;font-size:9pt}
+.comum div::before{content:"✓ ";color:var(--verde);font-weight:800}
+
+/* fechamento */
+.crono{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.crono div{border-top:3px solid var(--laranja);padding-top:2.5mm;font-size:9pt;color:var(--tinta-2)}
+.crono b{display:block;color:var(--tinta);font-size:10pt}
+.oferta{background:var(--preto);color:#f5ece0;border-radius:4mm;padding:7mm 8mm;display:grid;grid-template-columns:1.25fr 1fr;gap:6mm;align-items:center}
+.oferta h3{font-family:var(--display);font-weight:400;font-size:19pt;text-transform:uppercase;color:#fff;line-height:1.05}
+.oferta h3 em{font-style:normal;color:var(--laranja)}
+.oferta ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2mm;font-size:10pt}
+.oferta li::before{content:"→ ";color:var(--laranja);font-weight:800}
+.oferta .prazo{font-size:9pt;color:#bfae9b;margin-top:3mm}
+.cta{border:2px dashed var(--laranja);border-radius:4mm;padding:5mm 6mm;display:flex;gap:6mm;align-items:center}
+.cta>div>b{font-family:var(--display);font-weight:400;font-size:14pt;text-transform:uppercase}
+.gap.apertado{gap:4.5mm}
+</style>
+</head>
+<body>
+
+<!-- 1 · CAPA -->
+<section class="pg capa">
+  <div class="foto"></div><div class="sombra"></div>
+  <div class="in">
+    <img class="logo" src="../img/logo-branco.png" alt="Point do Pipi">
+    <div class="tit">
+      <span class="selo">Proposta comercial</span>
+      <h1>Pedido direto,<br><em>sem comissão</em>.</h1>
+      <p class="sub">Cardápio digital no link da bio, pedido pronto no WhatsApp, impressão automática na loja e sistema de gestão. E o dinheiro que hoje fica no aplicativo passa a trazer cliente novo.</p>
+    </div>
+    <div class="meta"><div><b>Preparado para</b>Point do Pipi · Afogados da Ingazeira - PE</div><div style="text-align:right"><b>Novo Traço</b>27 de novembro de 2026 · válida por 15 dias</div></div>
+  </div>
+</section>
+
+<!-- 2 · CUSTO DO IFOOD -->
+<section class="pg"><div class="gap">
+  <div><div class="eyebrow">O ponto de partida</div><h2>Quanto o iFood <em>leva</em> hoje</h2>
+  <p class="lead">O aplicativo traz pedidos, mas cobra uma parte de cada venda. Somando tudo, de cada R$ 100 vendidos, entre R$ 15 e R$ 26 ficam com o app.</p></div>
+  <div class="taxas">
+    <div class="taxa"><b>12%</b><span>de comissão no Plano Básico (a loja entrega)</span></div>
+    <div class="taxa"><b>23%</b><span>de comissão no Plano Entrega (o iFood entrega)</span></div>
+    <div class="taxa"><b>3,2%</b><span>de taxa sobre pedidos pagos online no app</span></div>
+    <div class="taxa"><b>R$ 150</b><span>de mensalidade (R$ 110 no Básico) acima de R$ 1.800/mês</span></div>
+  </div>
+  <div>
+    <h3 style="margin-bottom:3mm">Simulação: quanto fica com o app</h3>
+    <table class="num">
+      <thead><tr><th>Vendas no iFood por mês</th><th class="r">Plano Básico · por mês</th><th class="r">Básico · por ano</th><th class="r">Plano Entrega · por mês</th><th class="r">Entrega · por ano</th></tr></thead>
+      <tbody>
+        <tr><td>R$ 6.000 <span class="nota">(~120 pedidos)</span></td><td class="r">R$ 1.022</td><td class="r">R$ 12.264</td><td class="r">R$ 1.722</td><td class="r">R$ 20.664</td></tr>
+        <tr class="dest"><td>R$ 12.000 <span class="nota">(~240 pedidos)</span></td><td class="r">R$ 1.934</td><td class="r">R$ 23.208</td><td class="r">R$ 3.294</td><td class="r">R$ 39.528</td></tr>
+        <tr><td>R$ 20.000 <span class="nota">(~400 pedidos)</span></td><td class="r">R$ 3.150</td><td class="r">R$ 37.800</td><td class="r">R$ 5.390</td><td class="r">R$ 64.680</td></tr>
+      </tbody>
+    </table>
+    <p class="nota" style="margin-top:2.5mm">Cálculo: comissão + 3,2% de pagamento online + mensalidade do plano. Ticket médio considerado: R$ 50. Pedidos novos de quem nunca comprou da loja continuam vindo pelo app. O que muda é o cliente que já conhece o Point do Pipi.</p>
+  </div>
+  <div class="grande"><b class="num">R$ 23 mil</b><p>É o que uma loja que vende <strong>R$ 12 mil por mês no iFood</strong> paga ao aplicativo em um ano, mesmo no plano mais barato. Boa parte disso vem de cliente que <strong>já é da casa</strong> e poderia pedir direto.</p></div>
+  <div class="box"><h3 style="margin-bottom:2mm">E tem um custo que não aparece na fatura</h3>
+    <ul class="lista"><li>No iFood, o contato do cliente fica com o iFood. A loja não consegue chamar o cliente de volta numa terça fraca.</li><li>O cliente vê os concorrentes na mesma tela, do lado do Point do Pipi.</li><li>Promoção e preço precisam cobrir a comissão, e isso aperta a margem.</li></ul></div>
+</div>
+<div class="rodape"><span>Proposta comercial · Point do Pipi</span><span>Taxas conforme planos do iFood divulgados em 2026. Confirme os valores no Portal do Parceiro.</span></div></section>
+
+<!-- 3 · A VIRADA -->
+<section class="pg"><div class="gap">
+  <div><div class="eyebrow">A virada</div><h2>A economia vira <em>cliente novo</em></h2>
+  <p class="lead">A ideia não é sair do iFood. É levar o cliente que já conhece a loja para pedir direto e usar parte do que se economiza em anúncio para trazer gente nova.</p></div>
+  <div class="fluxo">
+    <div class="passo"><div class="n">01</div><h3>Link na bio e na embalagem</h3><p>Instagram, sacola e cupom com “peça direto pelo link e ganhe um mimo”.</p></div>
+    <div class="passo"><div class="n">02</div><h3>Pedido direto</h3><p>Sem comissão. O pedido cai pronto no WhatsApp e sai impresso na loja.</p></div>
+    <div class="passo"><div class="n">03</div><h3>Economia todo mês</h3><p>Os 15% a 26% que iam para o app ficam no caixa do Point do Pipi.</p></div>
+    <div class="passo"><div class="n">04</div><h3>Vira anúncio</h3><p>Parte da economia paga anúncios no Instagram para quem mora em Afogados.</p></div>
+  </div>
+  <div class="conta">
+    <div class="box"><h3>Exemplo com R$ 12 mil/mês no iFood</h3><p class="nota" style="margin:1mm 0 4mm">Plano Básico · 40% dos pedidos migram para o link próprio</p>
+      <div class="barras num">
+        <div class="barra"><span>Comissão que deixa de pagar</span><span class="t"><i style="width:100%;background:var(--verde)"></i></span><span class="v">+ R$ 729,60</span></div>
+        <div class="barra"><span>Mensalidade Pacote Completo</span><span class="t"><i style="width:27%;background:var(--tinta-2)"></i></span><span class="v">− R$ 197,00</span></div>
+        <div class="barra"><span>Anúncios (R$ 15 por dia)</span><span class="t"><i style="width:62%;background:var(--laranja)"></i></span><span class="v">− R$ 450,00</span></div>
+        <div class="barra" style="border-top:1.5px solid var(--tinta);padding-top:2.5mm"><span><b>Sobra no caixa</b></span><span></span><span class="v" style="color:var(--verde)">+ R$ 82,60</span></div>
+      </div>
+      <p class="nota" style="margin-top:4mm">O sistema e os anúncios <b>se pagam com a própria economia</b>, e os clientes novos que os anúncios trouxerem são ganho extra. No Plano Entrega a economia sobe para R$ 1.257,60/mês, mas a entrega passa a ser feita pela loja (com taxa cobrada do cliente).</p></div>
+    <div class="box"><h3>O que muda para a loja</h3>
+      <ul class="lista" style="margin-top:4mm">
+        <li><b>O cliente passa a ser da loja:</b> nome e WhatsApp de quem pediu ficam com vocês, para avisar de promoção e lançamento.</li>
+        <li><b>Margem maior</b> em cada pedido direto, sem repassar comissão no preço.</li>
+        <li><b>Menos erro:</b> o pedido chega escrito, numerado e com o troco calculado.</li>
+        <li><b>Menos tempo no celular:</b> ninguém precisa mandar cardápio e preço um por um.</li>
+        <li><b>Anúncio com destino certo:</b> quem clica cai no cardápio com fotos e já pede.</li>
+      </ul></div>
+  </div>
+  <p class="nota">Simulação ilustrativa. O resultado real depende de quantos clientes passam a pedir direto. Os números da loja podem ser colocados nesta mesma conta na reunião.</p>
+</div>
+<div class="rodape"><span>Proposta comercial · Point do Pipi</span><span>Novo Traço</span></div></section>
+
+<!-- 4 · COMO FUNCIONA -->
+<section class="pg"><div class="gap">
+  <div><div class="eyebrow">Na prática</div><h2>Como <em>funciona</em></h2>
+  <p class="lead">Já está pronto e funcionando com a cara do Point do Pipi. Estas são telas reais do protótipo. O vídeo que acompanha esta proposta mostra o passo a passo.</p></div>
+  <div><div class="grupo">Para o cliente</div>
+    <div class="telas">
+      <div class="tela"><img src="img/1-bio.jpg" alt=""><b>Link na bio</b><span>Logo, selo de 1º lugar, horário e botões de cardápio, WhatsApp e mapa.</span></div>
+      <div class="tela"><img src="img/2-cardapio.jpg" alt=""><b>Cardápio com fotos</b><span>Separado por categoria, com preço e um toque para adicionar.</span></div>
+      <div class="tela"><img src="img/3-checkout.jpg" alt=""><b>Entrega ou retirada</b><span>Endereço, pagamento e troco preenchidos uma vez só.</span></div>
+      <div class="tela"><img src="img/4-painel.jpg" alt=""><b>Painel da loja</b><span>O pedido chega com alarme e número. Um toque para aceitar.</span></div>
+    </div></div>
+  <div><div class="grupo">Para a loja</div>
+    <div class="telas">
+      <div class="tela"><img src="img/5-cupom.jpg" alt="" style="object-position:center 20%"><b>Impressão automática</b><span>Cupom na impressora Bluetooth: itens, endereço e troco.</span></div>
+      <div class="tela"><img src="img/6-dashboard.jpg" alt=""><b>Dashboard do dono</b><span>Faturamento, ticket médio, canais e comparação com ontem.</span></div>
+      <div class="tela"><img src="img/7-mesas.jpg" alt=""><b>Garçom e mesas</b><span>Cada funcionário entra com o próprio link e PIN.</span></div>
+      <div class="tela"><img src="img/8-cozinha.jpg" alt=""><b>Cozinha</b><span>Fila com cronômetro e botão de pronto.</span></div>
+    </div></div>
+</div>
+<div class="rodape"><span>Proposta comercial · Point do Pipi</span><span>Novo Traço</span></div></section>
+
+<!-- 5 · PACOTES -->
+<section class="pg"><div class="gap apertado">
+  <div><div class="eyebrow">Investimento</div><h2>Escolha o <em>pacote</em></h2>
+  <p class="lead">Implantação uma vez, mensalidade fixa e nenhuma comissão por pedido, venda o quanto vender.</p></div>
+  <div class="pacotes" style="margin-top:3mm">
+    <div class="pac"><h3>Essencial</h3><p class="para">Para começar a receber pedido direto sem mexer na rotina.</p>
+      <div class="preco num"><div class="m"><b>R$ 147</b>/mês</div><div class="i">Implantação <b>R$ 800</b> ou 2x de R$ 400</div></div>
+      <ul><li>Página do link na bio com a identidade da loja</li><li>Cardápio digital com fotos, por categoria</li><li>Pedido pronto e numerado no WhatsApp</li><li>Entrega ou retirada, troco e observações</li><li>Botão de mapa e Instagram</li></ul></div>
+    <div class="pac rec"><span class="flag">Mais indicado</span><h3>Completo</h3><p class="para">Para parar de anotar pedido e ter a vitrine mais bonita da cidade.</p>
+      <div class="preco num"><div class="m"><b>R$ 197</b>/mês</div><div class="i">Implantação <b>R$ 1.400</b> ou 3x de R$ 467</div></div>
+      <ul><li class="mais">Tudo do Essencial, mais:</li><li>Sessão de fotos de até 12 lanches</li><li>3 vídeos curtos para o topo da página e para o Reels</li><li>Painel de pedidos com alarme</li><li>Impressão automática na impressora Bluetooth</li><li>Aviso ao cliente com 1 toque (aceito, saiu, pronto)</li></ul></div>
+    <div class="pac"><h3>Sistema</h3><p class="para">Para quem atende mesa, balcão e delivery e quer controle total.</p>
+      <div class="preco num"><div class="m"><b>R$ 347</b>/mês</div><div class="i">Implantação <b>R$ 1.900</b> ou 3x de R$ 634</div></div>
+      <ul><li class="mais">Tudo do Completo, mais:</li><li>Dashboard: faturamento, ticket, canais, mais vendidos</li><li>Equipe com link e PIN de cada funcionário</li><li>Garçom: mesas, comanda e conta dividida</li><li>Cozinha com fila e cronômetro</li><li>Preço e “esgotado” editáveis na hora</li><li>Relatório mensal de vendas</li></ul></div>
+  </div>
+  <div class="box"><h3>Incluso em todos os pacotes</h3>
+    <div class="comum"><div>Domínio próprio (pointdopipi.com.br)</div><div>Hospedagem e manutenção</div><div>Troca de preços e itens sempre que precisar</div><div>Treinamento da equipe</div><div>Suporte pelo WhatsApp</div><div>Zero comissão por pedido</div></div></div>
+  <div class="box" style="border-color:var(--laranja);background:var(--laranja-claro)"><h3>Opcional · Gestão de tráfego pago</h3>
+    <p style="margin-top:2mm;font-size:9.6pt">Anúncios no Instagram e no Facebook para quem mora em Afogados da Ingazeira e região, levando direto para o cardápio. <b>R$ 497/mês</b> de gestão + verba paga direto à Meta (sugestão: a partir de R$ 15 por dia). Relatório mensal de resultados.</p></div>
+  <p class="nota">Não inclui as taxas da maquininha de cartão nem a compra de impressora: a loja usa a impressora Bluetooth que já tem.</p>
+</div>
+<div class="rodape"><span>Proposta comercial · Point do Pipi</span><span>Novo Traço</span></div></section>
+
+<!-- 6 · FECHAMENTO -->
+<section class="pg"><div class="gap apertado">
+  <div><div class="eyebrow">Próximos passos</div><h2>No ar em <em>10 dias</em></h2></div>
+  <div class="crono">
+    <div><b>Dia 1</b>Aprovação, contrato e envio do cardápio atual com os preços.</div>
+    <div><b>Até o dia 3</b>Sessão de fotos e vídeos na loja, num horário tranquilo.</div>
+    <div><b>Até o dia 7</b>Cardápio no ar com fotos, link na bio e WhatsApp configurado.</div>
+    <div><b>Até o dia 10</b>Painel, impressora e treinamento da equipe na loja.</div>
+  </div>
+  <div class="oferta">
+    <div><h3>Condição de lançamento <em>para o Point do Pipi</em></h3><p class="prazo">Fechando até 5 de dezembro de 2026.</p></div>
+    <ul><li><b>1ª mensalidade por nossa conta</b></li><li>Implantação em até 3x sem juros</li><li>Material de balcão incluso: QR code para mesa e adesivo da sacola “peça direto”</li><li>Fidelidade mínima de 6 meses</li></ul>
+  </div>
+  <div>
+    <h3 style="margin-bottom:3mm">Resumo do investimento</h3>
+    <table class="num">
+      <thead><tr><th>Pacote</th><th class="r">Implantação</th><th class="r">Mensalidade</th><th class="r">1º mês (com a condição)</th><th class="r">Comissão por pedido</th></tr></thead>
+      <tbody>
+        <tr><td>Essencial</td><td class="r">R$ 800</td><td class="r">R$ 147</td><td class="r">R$ 0</td><td class="r">R$ 0</td></tr>
+        <tr class="dest"><td>Completo</td><td class="r">R$ 1.400</td><td class="r">R$ 197</td><td class="r">R$ 0</td><td class="r">R$ 0</td></tr>
+        <tr><td>Sistema</td><td class="r">R$ 1.900</td><td class="r">R$ 347</td><td class="r">R$ 0</td><td class="r">R$ 0</td></tr>
+        <tr><td>+ Tráfego pago (opcional)</td><td class="r">—</td><td class="r">R$ 497 + verba</td><td class="r">R$ 497 + verba</td><td class="r">R$ 0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box"><h3>Por que agora</h3>
+    <ul class="lista" style="margin-top:3mm">
+      <li>O Point do Pipi já tem o que mais custa construir: <b>clientes fiéis e o 1º lugar da região</b>. Falta um canal próprio para receber esses clientes sem pagar pedágio.</li>
+      <li>Dezembro e as férias são a época de maior movimento. Estar no ar antes é aproveitar esse pico.</li>
+    </ul></div>
+  <div class="cta"><img src="../img/icone.png" alt="" style="width:16mm;height:16mm;object-fit:contain;background:var(--preto);border-radius:50%;padding:2mm"><div><b>Para aprovar</b><p style="font-size:10.5pt;margin-top:1mm">Responda no WhatsApp da Novo Traço com o pacote escolhido, por exemplo <b>“Quero o Completo”</b>. A gente agenda a sessão de fotos e começa no mesmo dia.</p></div></div>
+</div>
+<div class="rodape"><span>Proposta comercial · Point do Pipi</span><span>Novo Traço · Marketing e tecnologia para restaurantes</span></div></section>
+
+</body>
+</html>
