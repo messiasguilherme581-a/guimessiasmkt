@@ -100,6 +100,21 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--papel);color:var(--chapa);font-weight:800;padding:12px 16px;border-radius:12px;z-index:50;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.5)}
 
+/* cupom na tela (demonstração) */
+#dlgCupom{background:transparent;border:0;width:min(380px,calc(100vw - 24px));overflow:visible}
+.impressora{background:#2a2622;border-radius:16px 16px 6px 6px;height:26px;position:relative;z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.impressora::after{content:"";position:absolute;left:12%;right:12%;bottom:6px;height:5px;border-radius:3px;background:#0b0a09}
+.papel{position:relative;z-index:1;margin:-6px auto 0;width:88%;background:#fbfaf6;color:#111;font-family:var(--mono);font-size:11.5px;line-height:1.3;padding:14px 10px 18px;white-space:pre;overflow-x:auto;animation:sai 1.6s cubic-bezier(.3,.7,.3,1) both;max-height:70vh;overflow-y:auto;
+  -webkit-mask:linear-gradient(#000 calc(100% - 10px),transparent 0),conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/12px 100%;
+  mask:linear-gradient(#000 calc(100% - 10px),transparent 0),conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/12px 100%}
+@keyframes sai{from{clip-path:inset(0 0 100% 0);transform:translateY(-30px)}to{clip-path:inset(0 0 0 0);transform:none}}
+.papel .bold{font-weight:700}
+.papel .big{font-weight:700;transform:scaleY(1.6);transform-origin:center;margin:5px 0}
+.papel .center{text-align:center}
+.papel hr{border:0;border-top:2px dashed #bbb;margin:14px -10px}
+.cupomBar{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.cupomBar p{margin:0;text-align:center;font-size:12.5px;color:var(--papel-2);background:rgba(18,17,16,.85);padding:8px 10px;border-radius:10px}
+
 /* cupom (impressão pelo navegador) */
 #cupom{display:none}
 @media print{
@@ -128,6 +143,7 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
   <section class="start" id="start">
     <h2>Abrir o turno</h2>
     <p>Toque para ligar o som de novos pedidos e manter a tela acesa. Depois conecte a impressora em <b>Impressora</b>, lá em cima.</p>
+    <p><b>Para testar agora:</b> toque em <b>➕ Simular pedido</b> (lá embaixo) e depois em <b>✅ Aceitar e imprimir</b>. O cupom sai na tela igual ao papel.</p>
     <button class="b go" type="button" id="btnTurno" style="width:100%">🔔 Começar a receber pedidos</button>
   </section>
 
@@ -151,6 +167,7 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
     <h2>Impressora</h2>
     <label>Como imprimir
       <select id="metodo">
+        <option value="tela">Mostrar o cupom na tela (demonstração)</option>
         <option value="ble">Bluetooth direto (Chrome no Android)</option>
         <option value="rawbt">App RawBT (Android, qualquer impressora Bluetooth)</option>
         <option value="serial">Computador com impressora pareada (Chrome)</option>
@@ -172,6 +189,15 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
       <button class="b" type="button" id="btnTeste">🧾 Imprimir teste</button>
     </div>
     <button class="b go" type="button" id="btnFechar">Pronto</button>
+  </div>
+</dialog>
+
+<dialog id="dlgCupom">
+  <div class="impressora" aria-hidden="true"></div>
+  <div class="papel" id="papelTela"></div>
+  <div class="cupomBar">
+    <p id="cupomMsg">Assim o pedido sai na impressora da loja.</p>
+    <button class="b go" type="button" id="btnCupomOk">OK</button>
   </div>
 </dialog>
 
@@ -273,13 +299,14 @@ function htmlCupom(linhas){ return linhas.map(l=>`<div class="${[l.bold&&"bold",
 /* ======================= IMPRESSORA ======================= */
 const BLE_SERVICES=["000018f0-0000-1000-8000-00805f9b34fb","e7810a71-73ae-499d-8c15-faa9aef0c3f2","49535343-fe7d-4ae5-8fa9-9fafd205e455","0000ff00-0000-1000-8000-00805f9b34fb","0000fee7-0000-1000-8000-00805f9b34fb","0000ae30-0000-1000-8000-00805f9b34fb","0000ffe0-0000-1000-8000-00805f9b34fb"];
 const Imp = {
-  metodo: pref("metodo")||"ble",
+  metodo: pref("metodo")||"tela",
   papel: pref("papel")||"58",
   vias: Number(pref("vias")||1),
   ble:null, serial:null,
   get cols(){ return this.papel==="80"?48:32; },
   conectado(){ return this.metodo==="ble" ? !!(this.ble&&this.ble.device.gatt.connected)
                     : this.metodo==="serial" ? !!this.serial : true; },
+  ultimo:null,
   async conectar(){
     if(this.metodo==="ble"){
       if(!navigator.bluetooth) throw new Error("Este navegador não tem Bluetooth. Use o Chrome no Android ou escolha o app RawBT.");
@@ -319,6 +346,8 @@ const Imp = {
     }
   },
   async imprimir(p){
+    this.ultimo=p;
+    if(this.metodo==="tela"){ mostrarCupom(p); return; }
     const vias = this.vias===2 ? ["COZINHA", p.tipo==="entrega"?"ENTREGADOR":"BALCAO"] : [null];
     if(this.metodo==="navegador"){
       const el=$("#cupom"); el.className=this.papel==="80"?"w80":"";
@@ -330,7 +359,19 @@ const Imp = {
     await this.enviar(tudo);
   }
 };
+function mostrarCupom(p,msg){
+  const vias = Imp.vias===2 ? ["COZINHA", p.tipo==="entrega"?"ENTREGADOR":"BALCAO"] : [null];
+  const el=$("#papelTela");
+  el.innerHTML = vias.map(vv=>htmlCupom(cupom(p,Imp.cols,vv))).join("<hr>");
+  el.style.animation="none"; void el.offsetWidth; el.style.animation="";
+  $("#cupomMsg").textContent = msg || "Assim o pedido sai na impressora da loja. Na versão instalada, ao tocar em Aceitar ele imprime sozinho.";
+  try{ $("#dlgCupom").showModal(); }catch(e){ $("#dlgCupom").setAttribute("open",""); }
+  el.scrollTop=0;
+}
+$("#btnCupomOk").addEventListener("click",()=>$("#dlgCupom").close());
+const FALHOU = "Daqui a impressora não pôde ser usada (no link de demonstração o Bluetooth é bloqueado). Este é o cupom que sairia nela.";
 const HINTS={
+  tela:"Para demonstrar: ao aceitar um pedido, o cupom aparece na tela exatamente como sai no papel. Na loja, troque para <b>Bluetooth direto</b> ou <b>App RawBT</b>.",
   ble:"Abra este painel no <b>Google Chrome do Android</b>, ligue o Bluetooth e toque em Conectar. Funciona com a maioria das impressoras térmicas portáteis. Se a sua não aparecer ou não imprimir, use o app RawBT.",
   rawbt:"Instale o app gratuito <b>RawBT</b> na Play Store, pareie a impressora nele uma vez e pronto. Ao aceitar o pedido, o RawBT imprime. É o jeito mais compatível no Android.",
   serial:"No computador: pareie a impressora no Bluetooth do Windows, abra este painel no Chrome e toque em Conectar. Escolha a porta COM da impressora.",
@@ -339,7 +380,7 @@ const HINTS={
 function status(){
   const ok=Imp.conectado(), el=$("#impStatus"), pill=$("#btnImp");
   const nome = Imp.metodo==="ble" ? (Imp.ble?.device?.name||pref("bleNome")||"impressora") : "";
-  const txt = Imp.metodo==="ble" ? (ok?`Conectada: ${nome}`:"Bluetooth: nenhuma impressora conectada.")
+  const txt = Imp.metodo==="tela" ? "Demonstração: o cupom aparece na tela." : Imp.metodo==="ble" ? (ok?`Conectada: ${nome}`:"Bluetooth: nenhuma impressora conectada.")
            : Imp.metodo==="serial" ? (ok?"Conectada pela porta do computador.":"Computador: nenhuma porta conectada.")
            : Imp.metodo==="rawbt" ? "RawBT: o app cuida da conexão." : "Usará a impressora padrão do computador.";
   el.textContent=txt; el.className="st "+(ok?"ok":"");
@@ -356,7 +397,7 @@ $("#btnFechar").addEventListener("click",()=>$("#dlg").close());
 $("#btnConectar").addEventListener("click",async()=>{ try{ await Imp.conectar(); toast("Impressora conectada"); }catch(e){ if(e.name!=="NotFoundError"){ $("#impStatus").textContent=e.message; $("#impStatus").className="st err"; } } });
 $("#btnTeste").addEventListener("click",async()=>{
   const teste={numero:0,criadoEm:new Date().toISOString(),cliente:"Teste de impressão",fone:"87999999999",tipo:"retirada",itens:[{nome:"Pipi Clássico",qtd:1,preco:26.9}],obs:"Se você está lendo isto, a impressora está funcionando!",subtotal:26.9,taxa:0,total:26.9,pagamento:"Pix",troco:""};
-  try{ await Imp.imprimir(teste); toast("Teste enviado para a impressora"); }catch(e){ $("#impStatus").textContent=e.message||"Não foi possível imprimir."; $("#impStatus").className="st err"; }
+  try{ await Imp.imprimir(teste); if(Imp.metodo!=="tela") toast("Teste enviado para a impressora"); }catch(e){ $("#impStatus").textContent=e.message||"Não foi possível imprimir."; $("#impStatus").className="st err"; $("#dlg").close(); mostrarCupom(teste,FALHOU); }
 });
 
 /* ======================= SOM E TELA ======================= */
@@ -435,10 +476,10 @@ document.addEventListener("click",async e=>{
   const n=Number(b.dataset.n), a=b.dataset.a, p=Store.ler().find(x=>x.numero===n); if(!p) return;
   if(a==="aceitar"){
     Store.atualizar(n,{status:"aceito",aceitoEm:new Date().toISOString()}); render();
-    try{ await Imp.imprimir(p); toast(`Pedido ${nPed(n)} aceito e enviado para impressão`); }
-    catch(err){ toast("Aceito, mas não imprimiu: "+(err.message||"verifique a impressora")); }
+    try{ await Imp.imprimir(p); if(Imp.metodo!=="tela") toast(`Pedido ${nPed(n)} aceito e enviado para impressão`); }
+    catch(err){ mostrarCupom(p,FALHOU); }
   }
-  if(a==="reimprimir"){ try{ await Imp.imprimir(p); toast("Reimpressão enviada"); }catch(err){ toast("Não imprimiu: "+(err.message||"verifique a impressora")); } }
+  if(a==="reimprimir"){ try{ await Imp.imprimir(p); if(Imp.metodo!=="tela") toast("Reimpressão enviada"); }catch(err){ mostrarCupom(p,FALHOU); } }
   if(a==="recusar"){
     if(b.dataset.confirma!=="1"){ b.dataset.confirma="1"; b.textContent="Toque de novo para recusar"; setTimeout(()=>{ b.dataset.confirma=""; b.textContent="Recusar"; },3000); return; }
     Store.atualizar(n,{status:"recusado"}); render(); toast(`Pedido ${nPed(n)} recusado`);
