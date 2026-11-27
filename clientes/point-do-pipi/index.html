@@ -1,6 +1,7 @@
 <title>Point do Pipi</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Cardápio digital e pedidos pelo WhatsApp — Point do Pipi">
+<link rel="icon" href="img/icone.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
@@ -12,7 +13,7 @@
   --chapa-3:#2c2823;    /* bordas / inputs */
   --papel:#f5ece0;      /* texto principal: papel manteiga */
   --papel-2:#bfae9b;    /* texto secundário */
-  --cheddar:#f4b223;    /* amarelo da marca */
+  --cheddar:#ff9312;    /* laranja oficial da marca */
   --tomate:#e0472b;     /* alerta / fechado */
   --picles:#7fbf5a;     /* aberto / ok */
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
@@ -47,9 +48,12 @@ button{font:inherit;color:inherit}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(18,17,16,.55) 0%,rgba(18,17,16,.72) 45%,var(--chapa) 100%)}
 .hero-in{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding-block:44px 28px}
 .logo{width:104px;height:104px;border-radius:50%;background:#000;color:var(--cheddar);display:grid;place-items:center;font-family:var(--display);font-size:34px;letter-spacing:-1px;border:3px solid var(--cheddar);box-shadow:0 8px 30px rgba(0,0,0,.45);overflow:hidden}
-.premio{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.3px;color:var(--cheddar);border:1px solid rgba(244,178,35,.45);background:rgba(244,178,35,.08);padding:6px 12px;border-radius:999px}
-.hero-fallback.glow{background:radial-gradient(60% 55% at 50% 30%,rgba(244,178,35,.18),transparent 70%)}
+.premio{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.3px;color:var(--cheddar);border:1px solid rgba(255,147,18,.5);background:rgba(18,17,16,.6);padding:6px 12px;border-radius:999px}
+.hero-fallback.glow{background:radial-gradient(60% 55% at 50% 30%,rgba(255,147,18,.2),transparent 70%)}
 .logo img{width:100%;height:100%;object-fit:cover}
+.wordmark{margin:0 0 4px;line-height:0}
+.wordmark img{width:min(330px,80vw);height:auto;filter:drop-shadow(0 8px 28px rgba(0,0,0,.7))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);line-height:.95;margin:0;letter-spacing:-.5px;text-wrap:balance;text-transform:uppercase}
 .slogan{margin:0;color:var(--papel-2);font-size:15px;max-width:36ch}
 .status{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(23,17,13,.7);border:1px solid var(--chapa-3)}
@@ -61,7 +65,7 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);lin
 .btn:active{transform:scale(.98)}
 .btn svg{width:20px;height:20px;flex:none}
 .btn.main{background:var(--cheddar);color:var(--chapa);border-color:var(--cheddar)}
-.btn.main:hover{background:#ffc24a}
+.btn.main:hover{background:#ffa83f}
 .btn.wa{background:#1f3a22;border-color:#2f5a33}
 .btn.wa:hover{border-color:var(--picles)}
 .info{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;font-size:12.5px;color:var(--papel-2);margin-top:4px}
@@ -127,7 +131,7 @@ textarea{resize:vertical;min-height:70px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seg input{position:absolute;opacity:0;pointer-events:none}
 .seg label{flex-direction:row;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:12px;border:1.5px solid var(--chapa-3);background:var(--chapa);cursor:pointer;font-size:14.5px}
-.seg input:checked+label{border-color:var(--cheddar);background:rgba(242,178,51,.1);color:var(--cheddar)}
+.seg input:checked+label{border-color:var(--cheddar);background:rgba(255,147,18,.1);color:var(--cheddar)}
 .seg input:focus-visible+label{outline:2px solid var(--cheddar);outline-offset:2px}
 .note{font-size:13px;color:var(--papel-2);background:var(--chapa);border:1px dashed var(--chapa-3);border-radius:12px;padding:10px 12px}
 .err{color:#ff8a72;font-size:12.5px;font-weight:700}
@@ -147,8 +151,7 @@ footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 
 <header class="hero" id="topo">
   <div class="hero-media" id="heroMedia"></div>
   <div class="wrap hero-in">
-    <div class="logo" id="logo"></div>
-    <h1 id="nome"></h1>
+    <h1 class="wordmark" id="wm"><img id="wordmark" alt="" width="330" height="200"><span id="nome"></span></h1>
     <p class="slogan" id="slogan"></p>
     <span class="premio" id="premio" hidden></span>
     <span class="status" id="status"><i></i><span></span></span>
@@ -235,7 +238,7 @@ const LOJA = {
   demo: true,
   nome: "Point do Pipi",
   iniciais: "PP",
-  logo: "img/logo.png",
+  logo: "img/logo-branco.png",
   slogan: "Tradicionalismo e qualidade. Uma saborosa experiência em hambúrguer de Afogados da Ingazeira.",
   premio: "🏆 1º lugar · Prêmio Destaques Afogados",
   instagram: "pointdopipi",
@@ -291,7 +294,8 @@ const LOJA = {
   $("#nome").textContent = LOJA.nome;
   $("#slogan").textContent = LOJA.slogan;
   if(LOJA.premio){ $("#premio").textContent = LOJA.premio; $("#premio").hidden = false; }
-  $("#logo").innerHTML = LOJA.logo ? `<img src="${esc(LOJA.logo)}" alt="Logo ${esc(LOJA.nome)}">` : esc(LOJA.iniciais);
+  if(LOJA.logo){ $("#wordmark").src = LOJA.logo; $("#wordmark").removeAttribute("height"); $("#nome").className = "sr"; }
+  else { $("#wordmark").remove(); $("#wm").style.lineHeight = ".95"; }
   $("#waDireto").href = waLink(`Olá, ${LOJA.nome}! Vim pelo link da bio 🍔`);
   $("#maps").href = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(LOJA.endereco);
   $("#insta").href = "https://instagram.com/"+LOJA.instagram;
@@ -332,7 +336,7 @@ const LOJA = {
 
   /* ---------- foto ou ilustração provisória ---------- */
   function arte(p){
-    const pal = {burgers:["#c9872f","#f2b233","#e0472b","#5a3420"],combos:["#c9872f","#f2b233","#7fbf5a","#5a3420"],porcoes:["#e8b04a","#f2b233","#e0472b","#5a3420"],bebidas:["#7fbf5a","#f5ece0","#e0472b","#2e2219"]}[p.cat]||["#c9872f","#f2b233","#e0472b","#5a3420"];
+    const pal = {burgers:["#d9902f","#ff9312","#e0472b","#5a3420"],combos:["#c9872f","#f2b233","#7fbf5a","#5a3420"],porcoes:["#e8b04a","#f2b233","#e0472b","#5a3420"],bebidas:["#7fbf5a","#f5ece0","#e0472b","#2e2219"]}[p.cat]||["#c9872f","#f2b233","#e0472b","#5a3420"];
     const [pao,queijo,extra,carne]=pal;
     let g;
     if(p.cat==="bebidas"){
