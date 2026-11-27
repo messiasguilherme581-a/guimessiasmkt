@@ -316,7 +316,7 @@ const LOJA = {
   $("#maps").href = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(LOJA.endereco);
   $("#insta").href = "https://instagram.com/"+LOJA.instagram;
   $("#info").innerHTML = `<span>📍 ${esc(LOJA.endereco)}</span><span>@${esc(LOJA.instagram)}</span>`;
-  $("#rodape").innerHTML = `${esc(LOJA.nome)} · O melhor da região<br>${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp (87) 99928-3353`;
+  $("#rodape").innerHTML = `${esc(LOJA.nome)} · O melhor da região<br>${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp (87) 99928-3353${LOJA.demo?`<br><br><a href="painel.html" target="_blank" rel="noopener" style="color:var(--cheddar);font-weight:700">Painel da loja (demonstração) →</a>`:""}`;
 
   const hm = $("#heroMedia");
   if(LOJA.heroVideo){
