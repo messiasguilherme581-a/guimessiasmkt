@@ -7,12 +7,12 @@
 /* Layout: link-na-bio no topo (vídeo + botões) → cardápio com chips fixos → barra de pedido flutuante → painel de checkout que gera a mensagem do WhatsApp.
    Look único e escuro, de propósito: chapa quente, cheddar e tomate. */
 :root{
-  --chapa:#17110d;      /* fundo: ferro da chapa */
-  --chapa-2:#211812;    /* superfícies */
-  --chapa-3:#2e2219;    /* bordas / inputs */
+  --chapa:#121110;      /* fundo: preto da marca */
+  --chapa-2:#1c1a17;    /* superfícies */
+  --chapa-3:#2c2823;    /* bordas / inputs */
   --papel:#f5ece0;      /* texto principal: papel manteiga */
   --papel-2:#bfae9b;    /* texto secundário */
-  --cheddar:#f2b233;    /* acento principal */
+  --cheddar:#f4b223;    /* amarelo da marca */
   --tomate:#e0472b;     /* alerta / fechado */
   --picles:#7fbf5a;     /* aberto / ok */
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
@@ -44,9 +44,11 @@ button{font:inherit;color:inherit}
   radial-gradient(40% 40% at 80% 90%,rgba(224,71,43,.22),transparent 70%),
   var(--chapa)}
 .hero-fallback canvas{width:100%;height:100%;display:block}
-.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(23,17,13,.35) 0%,rgba(23,17,13,.55) 45%,var(--chapa) 100%)}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(18,17,16,.55) 0%,rgba(18,17,16,.72) 45%,var(--chapa) 100%)}
 .hero-in{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding-block:44px 28px}
-.logo{width:96px;height:96px;border-radius:50%;background:var(--cheddar);color:var(--chapa);display:grid;place-items:center;font-family:var(--display);font-size:34px;letter-spacing:-1px;border:3px solid var(--papel);box-shadow:0 8px 30px rgba(0,0,0,.45);overflow:hidden}
+.logo{width:104px;height:104px;border-radius:50%;background:#000;color:var(--cheddar);display:grid;place-items:center;font-family:var(--display);font-size:34px;letter-spacing:-1px;border:3px solid var(--cheddar);box-shadow:0 8px 30px rgba(0,0,0,.45);overflow:hidden}
+.premio{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.3px;color:var(--cheddar);border:1px solid rgba(244,178,35,.45);background:rgba(244,178,35,.08);padding:6px 12px;border-radius:999px}
+.hero-fallback.glow{background:radial-gradient(60% 55% at 50% 30%,rgba(244,178,35,.18),transparent 70%)}
 .logo img{width:100%;height:100%;object-fit:cover}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);line-height:.95;margin:0;letter-spacing:-.5px;text-wrap:balance;text-transform:uppercase}
 .slogan{margin:0;color:var(--papel-2);font-size:15px;max-width:36ch}
@@ -140,7 +142,7 @@ input.bad{border-color:var(--tomate)}
 footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 10px}
 </style>
 
-<div class="demo" id="demo" hidden><div class="wrap">Versão de demonstração · itens, preços e fotos de exemplo</div></div>
+<div class="demo" id="demo" hidden><div class="wrap">Prévia · cardápio, preços e horários de exemplo até receber o catálogo</div></div>
 
 <header class="hero" id="topo">
   <div class="hero-media" id="heroMedia"></div>
@@ -148,6 +150,7 @@ footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 
     <div class="logo" id="logo"></div>
     <h1 id="nome"></h1>
     <p class="slogan" id="slogan"></p>
+    <span class="premio" id="premio" hidden></span>
     <span class="status" id="status"><i></i><span></span></span>
     <nav class="links" aria-label="Links principais">
       <a class="btn main" href="#cardapio">
@@ -232,20 +235,22 @@ const LOJA = {
   demo: true,
   nome: "Point do Pipi",
   iniciais: "PP",
-  logo: "",
-  slogan: "Hambúrguer artesanal na chapa, do jeito que tem que ser.",
+  logo: "img/logo.png",
+  slogan: "Tradicionalismo e qualidade. Uma saborosa experiência em hambúrguer de Afogados da Ingazeira.",
+  premio: "🏆 1º lugar · Prêmio Destaques Afogados",
   instagram: "pointdopipi",
-  whatsapp: "5500000000000",
-  endereco: "Rua Exemplo, 123 — Centro, Sua Cidade",
+  whatsapp: "5587999283353",
+  endereco: "Rua Diomedes Gomes Lopes, 321 · Afogados da Ingazeira - PE",
   horarios: { // 0 = domingo … 6 = sábado; null = fechado
     0:["18:00","23:30"], 1:null, 2:["18:00","23:30"], 3:["18:00","23:30"],
     4:["18:00","23:30"], 5:["18:00","00:00"], 6:["18:00","00:00"]
   },
   retiradaTempo: "20 a 30 min",
-  entrega: { ativa: true, taxa: 6, tempo: "40 a 60 min", pedidoMinimo: 25, obs: "Entregamos no Centro e bairros vizinhos." },
+  entrega: { ativa: true, taxa: 6, tempo: "40 a 60 min", pedidoMinimo: 25, obs: "Consulte os bairros atendidos." },
   pagamentos: ["Pix","Cartão de crédito","Cartão de débito","Dinheiro"],
   heroVideo: "",
   heroPoster: "",
+  heroImagem: "img/bacon.jpg",
   categorias: [
     { id:"burgers", nome:"Burgers", sub:"Blend da casa, pão brioche selado na manteiga" },
     { id:"combos",  nome:"Combos",  sub:"Burger + fritas + bebida" },
@@ -253,8 +258,8 @@ const LOJA = {
     { id:"bebidas", nome:"Bebidas", sub:"Geladas" }
   ],
   produtos: [
-    { id:"classico", cat:"burgers", nome:"Pipi Clássico", desc:"Pão brioche, blend 150g, queijo cheddar, alface, tomate e maionese da casa.", preco:26.9, destaque:"Mais pedido" },
-    { id:"bacon", cat:"burgers", nome:"Bacon Lovers", desc:"Blend 150g, cheddar duplo, bacon crocante e cebola caramelizada.", preco:32.9 },
+    { id:"classico", cat:"burgers", nome:"Pipi Clássico", desc:"Pão brioche, blend 150g, queijo cheddar, alface, tomate e maionese da casa.", preco:26.9, destaque:"Mais pedido", foto:"img/ovo.jpg" },
+    { id:"bacon", cat:"burgers", nome:"Bacon Lovers", desc:"Blend 150g, cheddar duplo, bacon crocante e cebola caramelizada.", preco:32.9, foto:"img/bacon.jpg" },
     { id:"smash", cat:"burgers", nome:"Smash Duplo", desc:"Dois smash 90g bem selados, queijo prato derretido, picles e molho especial.", preco:29.9 },
     { id:"monstro", cat:"burgers", nome:"Monstrão", desc:"Três carnes, três queijos, bacon, ovo e anéis de cebola. Prepara a fome.", preco:42.9, destaque:"Desafio" },
     { id:"c1", cat:"combos", nome:"Combo Clássico", desc:"Pipi Clássico + fritas 150g + refri lata.", preco:39.9 },
@@ -285,16 +290,20 @@ const LOJA = {
   $("#demo").hidden = !LOJA.demo;
   $("#nome").textContent = LOJA.nome;
   $("#slogan").textContent = LOJA.slogan;
+  if(LOJA.premio){ $("#premio").textContent = LOJA.premio; $("#premio").hidden = false; }
   $("#logo").innerHTML = LOJA.logo ? `<img src="${esc(LOJA.logo)}" alt="Logo ${esc(LOJA.nome)}">` : esc(LOJA.iniciais);
   $("#waDireto").href = waLink(`Olá, ${LOJA.nome}! Vim pelo link da bio 🍔`);
   $("#maps").href = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(LOJA.endereco);
   $("#insta").href = "https://instagram.com/"+LOJA.instagram;
   $("#info").innerHTML = `<span>📍 ${esc(LOJA.endereco)}</span><span>@${esc(LOJA.instagram)}</span>`;
-  $("#rodape").innerHTML = `${esc(LOJA.nome)} · ${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp`;
+  $("#rodape").innerHTML = `${esc(LOJA.nome)} · O melhor da região<br>${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp (87) 99928-3353`;
 
   const hm = $("#heroMedia");
   if(LOJA.heroVideo){
     hm.innerHTML = `<video autoplay muted loop playsinline preload="metadata" ${LOJA.heroPoster?`poster="${esc(LOJA.heroPoster)}"`:""}><source src="${esc(LOJA.heroVideo)}" type="video/mp4"></video>`;
+  } else if(LOJA.heroImagem){
+    hm.innerHTML = `<img src="${esc(LOJA.heroImagem)}" alt=""><div class="hero-fallback glow"><canvas id="brasa"></canvas></div>`;
+    brasa($("#brasa"));
   } else {
     hm.innerHTML = `<div class="hero-fallback"><canvas id="brasa"></canvas></div>`;
     brasa($("#brasa"));
