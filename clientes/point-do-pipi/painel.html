@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121110">
+<title>Painel Point do Pipi</title>
+<link rel="icon" href="img/icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Painel de balcão: uma coluna de pedidos, botões grandes para dedo engordurado, novos pedidos piscam e tocam até alguém aceitar. */
+:root{
+  --chapa:#121110; --chapa-2:#1c1a17; --chapa-3:#2c2823;
+  --papel:#f5ece0; --papel-2:#bfae9b;
+  --laranja:#ff9312; --tomate:#e0472b; --picles:#5fbf5a; --azul:#5aa9e6;
+  --display:"Bowlby One","Arial Black",Impact,sans-serif;
+  --body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--chapa);color:var(--papel);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--laranja);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* topo */
+.top{position:sticky;top:0;z-index:10;background:rgba(18,17,16,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--chapa-3)}
+.top .wrap{display:flex;align-items:center;gap:10px;padding-block:10px}
+.top img{height:34px;width:auto}
+.top .t{flex:1;min-width:0}
+.top .t b{display:block;font-size:14px}
+.top .t small{color:var(--papel-2);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;border:1px solid var(--chapa-3);background:var(--chapa-2);cursor:pointer;white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--tomate)}
+.pill.ok i{background:var(--picles)}
+.demo{background:var(--laranja);color:var(--chapa);font-weight:700;font-size:12.5px;text-align:center;padding:6px 14px}
+
+/* abas */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding-block:12px}
+.tab{border:1.5px solid var(--chapa-3);background:var(--chapa-2);border-radius:12px;padding:8px 4px;font-weight:800;font-size:12.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab span{font-size:20px;line-height:1}
+.tab.on{border-color:var(--laranja);background:rgba(255,147,18,.12);color:var(--laranja)}
+.tab.alerta span{color:var(--tomate)}
+
+/* turno */
+.start{margin:18px 0;padding:22px;border-radius:18px;border:1.5px dashed var(--laranja);background:rgba(255,147,18,.06);display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.start h2{margin:0;font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:22px}
+.start p{margin:0;color:var(--papel-2)}
+
+/* pedidos */
+.list{display:flex;flex-direction:column;gap:12px;padding-bottom:40px}
+.ped{background:var(--chapa-2);border:1.5px solid var(--chapa-3);border-radius:18px;overflow:hidden}
+.ped.novo{border-color:var(--laranja);animation:pisca 1.2s ease-in-out infinite}
+@keyframes pisca{50%{box-shadow:0 0 0 4px rgba(255,147,18,.35)}}
+.ph{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--chapa-3)}
+.ph .n{font-family:var(--display);font-size:24px;line-height:1}
+.ph .meta{flex:1;min-width:0;font-size:12.5px;color:var(--papel-2)}
+.ph .meta b{color:var(--papel);font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tipo{font-size:11.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:5px 9px;border-radius:8px;background:var(--chapa-3)}
+.tipo.ent{background:rgba(90,169,230,.15);color:var(--azul)}
+.tipo.ret{background:rgba(95,191,90,.15);color:var(--picles)}
+.pb{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.itens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.itens li{display:flex;justify-content:space-between;gap:10px}
+.itens li b{color:var(--laranja);margin-right:6px}
+.obs{background:rgba(224,71,43,.12);border-left:3px solid var(--tomate);padding:8px 10px;border-radius:6px;font-weight:700}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13.5px}
+.kv dt{color:var(--papel-2)}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.total{display:flex;justify-content:space-between;font-weight:800;font-size:17px;border-top:1px solid var(--chapa-3);padding-top:8px}
+.total span:last-child{color:var(--laranja)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 14px}
+.b{min-height:50px;border-radius:12px;border:1.5px solid var(--chapa-3);background:var(--chapa);font-weight:800;font-size:14.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;padding:0 10px;text-align:center}
+.b:active{transform:scale(.98)}
+.b.go{background:var(--laranja);border-color:var(--laranja);color:var(--chapa);grid-column:1/-1;min-height:58px;font-size:16px}
+.b.wa{background:#173b22;border-color:#2c6b3c}
+.b.no{color:#ff8a72}
+.b.full{grid-column:1/-1}
+.vazio{text-align:center;color:var(--papel-2);padding:40px 10px}
+
+/* configurações */
+dialog{border:1px solid var(--chapa-3);background:var(--chapa-2);color:var(--papel);border-radius:20px;padding:0;width:min(560px,calc(100vw - 24px));max-height:90vh}
+dialog::backdrop{background:rgba(0,0,0,.65)}
+.cfg{display:flex;flex-direction:column;gap:14px;padding:18px}
+.cfg h2{margin:0;font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:20px}
+.cfg label{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px}
+.cfg select,.cfg input{background:var(--chapa);border:1.5px solid var(--chapa-3);border-radius:10px;padding:11px 12px;width:100%}
+.hint{font-size:12.5px;color:var(--papel-2);margin:0}
+.hint b{color:var(--papel)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st{font-size:13px;font-weight:700;padding:10px 12px;border-radius:10px;background:var(--chapa)}
+.st.ok{color:var(--picles)} .st.err{color:#ff8a72}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--papel);color:var(--chapa);font-weight:800;padding:12px 16px;border-radius:12px;z-index:50;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+
+/* cupom (impressão pelo navegador) */
+#cupom{display:none}
+@media print{
+  @page{size:58mm auto;margin:0}
+  body{background:#fff;color:#000;padding:0}
+  body>*:not(#cupom){display:none!important}
+  #cupom{display:block;font-family:var(--mono);font-size:11px;line-height:1.25;width:58mm;padding:2mm;white-space:pre-wrap;color:#000}
+  #cupom.w80{width:80mm;font-size:12px}
+  #cupom .bold{font-weight:700}
+  #cupom .big{font-size:15px;font-weight:700}
+  #cupom .center{text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="demo" id="demo">Modo demonstração · os pedidos ficam só neste aparelho</div>
+
+<header class="top"><div class="wrap">
+  <img src="img/logo-branco.png" alt="Point do Pipi">
+  <div class="t"><b>Painel de pedidos</b><small id="relogio" class="num"></small></div>
+  <button class="pill" id="btnImp" type="button"><i></i><span>Impressora</span></button>
+</div></header>
+
+<main class="wrap">
+  <section class="start" id="start">
+    <h2>Abrir o turno</h2>
+    <p>Toque para ligar o som de novos pedidos e manter a tela acesa. Depois conecte a impressora em <b>Impressora</b>, lá em cima.</p>
+    <button class="b go" type="button" id="btnTurno" style="width:100%">🔔 Começar a receber pedidos</button>
+  </section>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-f="novo" type="button"><span class="num" id="cNovo">0</span>Novos</button>
+    <button class="tab" data-f="aceito" type="button"><span class="num" id="cAceito">0</span>Preparo</button>
+    <button class="tab" data-f="pronto" type="button"><span class="num" id="cPronto">0</span>Prontos</button>
+    <button class="tab" data-f="fim" type="button"><span class="num" id="cFim">0</span>Encerrados</button>
+  </nav>
+
+  <div class="list" id="list"></div>
+
+  <div class="row2" style="padding-bottom:30px">
+    <button class="b" type="button" id="btnSim">➕ Simular pedido</button>
+    <a class="b" href="./" target="_blank" rel="noopener">🍔 Abrir cardápio</a>
+  </div>
+</main>
+
+<dialog id="dlg">
+  <div class="cfg">
+    <h2>Impressora</h2>
+    <label>Como imprimir
+      <select id="metodo">
+        <option value="ble">Bluetooth direto (Chrome no Android)</option>
+        <option value="rawbt">App RawBT (Android, qualquer impressora Bluetooth)</option>
+        <option value="serial">Computador com impressora pareada (Chrome)</option>
+        <option value="navegador">Janela de impressão do navegador</option>
+      </select>
+    </label>
+    <p class="hint" id="metodoHint"></p>
+    <div class="row2">
+      <label>Papel
+        <select id="papel"><option value="58">58 mm</option><option value="80">80 mm</option></select>
+      </label>
+      <label>Vias por pedido
+        <select id="vias"><option value="1">1 via</option><option value="2">2 vias (cozinha + entrega)</option></select>
+      </label>
+    </div>
+    <div class="st" id="impStatus">Nenhuma impressora conectada.</div>
+    <div class="row2">
+      <button class="b" type="button" id="btnConectar">🔗 Conectar</button>
+      <button class="b" type="button" id="btnTeste">🧾 Imprimir teste</button>
+    </div>
+    <button class="b go" type="button" id="btnFechar">Pronto</button>
+  </div>
+</dialog>
+
+<div id="cupom"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ======================= CONFIG ======================= */
+const CFG = {
+  loja: "POINT DO PIPI",
+  sub: "O melhor da regiao",
+  endereco: "Rua Diomedes Gomes Lopes, 321",
+  whatsappLoja: "5587999283353",
+  tempoRetirada: "20 a 30 min",
+  tempoEntrega: "40 a 60 min"
+};
+</script>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const brl = v => Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nPed = n => "#"+String(n).padStart(3,"0");
+const hora = iso => new Date(iso).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const foneFmt = d => d&&d.length===11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d||"";
+const toast = t => { const el=$("#toast"); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2600); };
+const pref = (k,v) => { try{ if(v===undefined) return localStorage.getItem("painel-"+k); localStorage.setItem("painel-"+k,v); }catch(e){ return null; } };
+
+/* ======================= PEDIDOS (modo demonstração: localStorage) =======================
+   Na versão com banco este bloco passa a ler/gravar no Supabase com atualização em tempo real. */
+const Store = {
+  ler(){ try{ return JSON.parse(localStorage.getItem("pipi-pedidos")||"[]"); }catch(e){ return []; } },
+  gravar(a){ try{ localStorage.setItem("pipi-pedidos",JSON.stringify(a)); }catch(e){} },
+  atualizar(numero,patch){ const a=Store.ler(); const p=a.find(x=>x.numero===numero); if(p){ Object.assign(p,patch); Store.gravar(a);} return p; },
+  numero(){ let n=0; try{ n=Number(localStorage.getItem("pipi-seq")||0)+1; localStorage.setItem("pipi-seq",String(n)); }catch(e){ n=Date.now()%1000; } return n; }
+};
+
+/* ======================= CUPOM ======================= */
+function semAcento(s){ return String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\x20-\x7E]/g,""); }
+function quebrar(txt,w){ const out=[]; let l=""; for(const p of semAcento(txt).split(/\s+/)){ if(!p) continue; if((l+" "+p).trim().length>w){ if(l) out.push(l); l=p; while(l.length>w){ out.push(l.slice(0,w)); l=l.slice(w);} } else l=(l+" "+p).trim(); } if(l) out.push(l); return out.length?out:[""]; }
+function par(a,b,w){ a=semAcento(a); b=semAcento(b); const sp=w-a.length-b.length; return sp>=1 ? a+" ".repeat(sp)+b : a.slice(0,w-b.length-1)+" "+b; }
+const v = n => Number(n||0).toFixed(2).replace(".",",");
+
+function cupom(p,cols,via){
+  const L=[], add=(t,o={})=>L.push({t:semAcento(t),...o}), sep=()=>add("-".repeat(cols));
+  add(CFG.loja,{center:1,big:1}); add(CFG.sub,{center:1});
+  if(via) add(`(${via})`,{center:1});
+  sep();
+  add(par(`PEDIDO ${nPed(p.numero)}`, new Date(p.criadoEm).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}).replace(",",""),cols),{bold:1});
+  add(p.tipo==="entrega"?"*** ENTREGA ***":"*** RETIRADA ***",{center:1,big:1});
+  sep();
+  quebrar("Cliente: "+p.cliente,cols).forEach(t=>add(t));
+  if(p.fone) add("Fone: "+foneFmt(p.fone));
+  if(p.endereco){
+    quebrar(`End: ${p.endereco.rua}, ${p.endereco.numero}`,cols).forEach(t=>add(t,{bold:1}));
+    quebrar("Bairro: "+p.endereco.bairro,cols).forEach(t=>add(t,{bold:1}));
+    if(p.endereco.ref) quebrar("Ref: "+p.endereco.ref,cols).forEach(t=>add(t));
+  }
+  sep();
+  for(const it of p.itens){
+    const preco=v(it.qtd*it.preco), w=cols-preco.length-1;
+    const linhas=quebrar(`${it.qtd}x ${it.nome}`,w);
+    add(par(linhas[0],preco,cols),{bold:1});
+    linhas.slice(1).forEach(t=>add("   "+t,{bold:1}));
+  }
+  if(p.obs){ sep(); quebrar("OBS: "+p.obs,cols).forEach(t=>add(t,{bold:1})); }
+  sep();
+  add(par("Subtotal",v(p.subtotal),cols));
+  if(p.taxa) add(par("Entrega",v(p.taxa),cols));
+  add(par("TOTAL","R$ "+v(p.total),cols),{bold:1,big:cols>=40});
+  quebrar("Pagamento: "+p.pagamento,cols).forEach(t=>add(t,{bold:1}));
+  if(p.troco){ const t=Number(String(p.troco).replace(",","."));
+    add(`Troco para: R$ ${p.troco}`); if(t>p.total) add(`Levar de troco: R$ ${v(t-p.total)}`,{bold:1}); }
+  sep();
+  add("Obrigado pela preferencia!",{center:1});
+  return L;
+}
+
+/* ESC/POS */
+function escpos(linhas,cols,copias){
+  const b=[]; const push=(...x)=>b.push(...x); const txt=s=>{ for(const ch of s) push(ch.charCodeAt(0)); };
+  for(let c=0;c<copias;c++){
+    push(0x1B,0x40);                          // reset
+    for(const l of linhas){
+      push(0x1B,0x61,l.center?1:0);           // alinhamento
+      push(0x1B,0x45,l.bold||l.big?1:0);      // negrito
+      push(0x1D,0x21,l.big?0x01:0x00);        // altura dupla
+      txt(l.big? l.t.slice(0,cols) : l.t); push(0x0A);
+    }
+    push(0x1D,0x21,0,0x1B,0x45,0,0x1B,0x61,0);
+    push(0x0A,0x0A,0x0A,0x0A);
+    push(0x1D,0x56,0x42,0x00);                // corte (ignorado em impressora sem guilhotina)
+  }
+  return new Uint8Array(b);
+}
+function htmlCupom(linhas){ return linhas.map(l=>`<div class="${[l.bold&&"bold",l.big&&"big",l.center&&"center"].filter(Boolean).join(" ")}">${esc(l.t)||"&nbsp;"}</div>`).join(""); }
+
+/* ======================= IMPRESSORA ======================= */
+const BLE_SERVICES=["000018f0-0000-1000-8000-00805f9b34fb","e7810a71-73ae-499d-8c15-faa9aef0c3f2","49535343-fe7d-4ae5-8fa9-9fafd205e455","0000ff00-0000-1000-8000-00805f9b34fb","0000fee7-0000-1000-8000-00805f9b34fb","0000ae30-0000-1000-8000-00805f9b34fb","0000ffe0-0000-1000-8000-00805f9b34fb"];
+const Imp = {
+  metodo: pref("metodo")||"ble",
+  papel: pref("papel")||"58",
+  vias: Number(pref("vias")||1),
+  ble:null, serial:null,
+  get cols(){ return this.papel==="80"?48:32; },
+  conectado(){ return this.metodo==="ble" ? !!(this.ble&&this.ble.device.gatt.connected)
+                    : this.metodo==="serial" ? !!this.serial : true; },
+  async conectar(){
+    if(this.metodo==="ble"){
+      if(!navigator.bluetooth) throw new Error("Este navegador não tem Bluetooth. Use o Chrome no Android ou escolha o app RawBT.");
+      const device = await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:BLE_SERVICES});
+      const server = await device.gatt.connect();
+      let alvo=null;
+      for(const s of await server.getPrimaryServices()){
+        for(const c of await s.getCharacteristics()){
+          if(c.properties.write||c.properties.writeWithoutResponse){ alvo=c; break; }
+        } if(alvo) break;
+      }
+      if(!alvo) throw new Error("Conectou, mas a impressora não aceitou dados por Bluetooth direto. Use o app RawBT.");
+      device.addEventListener("gattserverdisconnected",()=>{ status(); toast("Impressora desconectou. Toque em Impressora para reconectar."); });
+      this.ble={device,char:alvo}; pref("bleNome",device.name||"");
+    } else if(this.metodo==="serial"){
+      if(!navigator.serial) throw new Error("Use o Google Chrome no computador.");
+      const port = await navigator.serial.requestPort();
+      await port.open({baudRate:9600});
+      this.serial=port;
+    }
+    status();
+  },
+  async enviar(bytes){
+    if(this.metodo==="ble"){
+      if(!this.conectado()) await this.conectar();
+      const c=this.ble.char, comResp=c.properties.write, tam=comResp?180:20;
+      for(let i=0;i<bytes.length;i+=tam){
+        const parte=bytes.slice(i,i+tam);
+        if(comResp) await c.writeValueWithResponse(parte); else { await c.writeValueWithoutResponse(parte); await new Promise(r=>setTimeout(r,12)); }
+      }
+    } else if(this.metodo==="serial"){
+      if(!this.serial) await this.conectar();
+      const w=this.serial.writable.getWriter(); await w.write(bytes); w.releaseLock();
+    } else if(this.metodo==="rawbt"){
+      let bin=""; bytes.forEach(x=>bin+=String.fromCharCode(x));
+      location.href = "intent:base64,"+btoa(bin)+"#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+    }
+  },
+  async imprimir(p){
+    const vias = this.vias===2 ? ["COZINHA", p.tipo==="entrega"?"ENTREGADOR":"BALCAO"] : [null];
+    if(this.metodo==="navegador"){
+      const el=$("#cupom"); el.className=this.papel==="80"?"w80":"";
+      el.innerHTML = vias.map(vv=>htmlCupom(cupom(p,this.cols,vv))).join('<div style="page-break-after:always"></div>');
+      window.print(); return;
+    }
+    const partes = vias.map(vv=>escpos(cupom(p,this.cols,vv),this.cols,1));
+    const tudo = new Uint8Array(partes.reduce((s,x)=>s+x.length,0)); let o=0; partes.forEach(x=>{tudo.set(x,o); o+=x.length;});
+    await this.enviar(tudo);
+  }
+};
+const HINTS={
+  ble:"Abra este painel no <b>Google Chrome do Android</b>, ligue o Bluetooth e toque em Conectar. Funciona com a maioria das impressoras térmicas portáteis. Se a sua não aparecer ou não imprimir, use o app RawBT.",
+  rawbt:"Instale o app gratuito <b>RawBT</b> na Play Store, pareie a impressora nele uma vez e pronto. Ao aceitar o pedido, o RawBT imprime. É o jeito mais compatível no Android.",
+  serial:"No computador: pareie a impressora no Bluetooth do Windows, abra este painel no Chrome e toque em Conectar. Escolha a porta COM da impressora.",
+  navegador:"Usa o driver da impressora instalado no computador. No Chrome, dá para imprimir direto sem a janela abrindo o atalho com a opção --kiosk-printing."
+};
+function status(){
+  const ok=Imp.conectado(), el=$("#impStatus"), pill=$("#btnImp");
+  const nome = Imp.metodo==="ble" ? (Imp.ble?.device?.name||pref("bleNome")||"impressora") : "";
+  const txt = Imp.metodo==="ble" ? (ok?`Conectada: ${nome}`:"Bluetooth: nenhuma impressora conectada.")
+           : Imp.metodo==="serial" ? (ok?"Conectada pela porta do computador.":"Computador: nenhuma porta conectada.")
+           : Imp.metodo==="rawbt" ? "RawBT: o app cuida da conexão." : "Usará a impressora padrão do computador.";
+  el.textContent=txt; el.className="st "+(ok?"ok":"");
+  pill.classList.toggle("ok",ok); pill.querySelector("span").textContent = ok?"Impressora ok":"Impressora";
+  $("#btnConectar").hidden = !(Imp.metodo==="ble"||Imp.metodo==="serial");
+  $("#metodoHint").innerHTML = HINTS[Imp.metodo];
+}
+$("#metodo").value=Imp.metodo; $("#papel").value=Imp.papel; $("#vias").value=String(Imp.vias);
+$("#metodo").addEventListener("change",e=>{ Imp.metodo=e.target.value; pref("metodo",Imp.metodo); status(); });
+$("#papel").addEventListener("change",e=>{ Imp.papel=e.target.value; pref("papel",Imp.papel); });
+$("#vias").addEventListener("change",e=>{ Imp.vias=Number(e.target.value); pref("vias",String(Imp.vias)); });
+$("#btnImp").addEventListener("click",()=>{ status(); try{ $("#dlg").showModal(); }catch(e){ $("#dlg").setAttribute("open",""); } });
+$("#btnFechar").addEventListener("click",()=>$("#dlg").close());
+$("#btnConectar").addEventListener("click",async()=>{ try{ await Imp.conectar(); toast("Impressora conectada"); }catch(e){ if(e.name!=="NotFoundError"){ $("#impStatus").textContent=e.message; $("#impStatus").className="st err"; } } });
+$("#btnTeste").addEventListener("click",async()=>{
+  const teste={numero:0,criadoEm:new Date().toISOString(),cliente:"Teste de impressão",fone:"87999999999",tipo:"retirada",itens:[{nome:"Pipi Clássico",qtd:1,preco:26.9}],obs:"Se você está lendo isto, a impressora está funcionando!",subtotal:26.9,taxa:0,total:26.9,pagamento:"Pix",troco:""};
+  try{ await Imp.imprimir(teste); toast("Teste enviado para a impressora"); }catch(e){ $("#impStatus").textContent=e.message||"Não foi possível imprimir."; $("#impStatus").className="st err"; }
+});
+
+/* ======================= SOM E TELA ======================= */
+let audio=null, somLigado=false, wake=null;
+function bip(){
+  if(!audio) return;
+  const t=audio.currentTime;
+  [0,0.22,0.44].forEach((d,i)=>{ const o=audio.createOscillator(), g=audio.createGain();
+    o.type="square"; o.frequency.value=i===2?1320:988; g.gain.setValueAtTime(0.0001,t+d); g.gain.exponentialRampToValueAtTime(0.25,t+d+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d+0.18);
+    o.connect(g).connect(audio.destination); o.start(t+d); o.stop(t+d+0.2); });
+  try{ navigator.vibrate && navigator.vibrate([200,100,200]); }catch(e){}
+}
+async function manterTela(){ try{ if("wakeLock" in navigator && document.visibilityState==="visible") wake=await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(somLigado) manterTela(); });
+$("#btnTurno").addEventListener("click",()=>{
+  try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); audio.resume(); }catch(e){}
+  somLigado=true; bip(); manterTela(); $("#start").hidden=true; pref("turno","1"); toast("Turno aberto. Você vai ouvir um alarme a cada pedido novo.");
+});
+setInterval(()=>{ if(somLigado && Store.ler().some(p=>p.status==="novo")) bip(); },4000);
+
+/* ======================= TELA DE PEDIDOS ======================= */
+let filtro="novo", vistos=new Set(Store.ler().map(p=>p.numero));
+const GRUPO = { novo:["novo"], aceito:["aceito"], pronto:["pronto"], fim:["concluido","recusado"] };
+const waCliente = (p,txt) => "https://wa.me/55"+p.fone+"?text="+encodeURIComponent(txt);
+
+function card(p){
+  const ent=p.tipo==="entrega";
+  const end = p.endereco ? `<dt>Endereço</dt><dd><b>${esc(p.endereco.rua)}, ${esc(p.endereco.numero)}</b> · ${esc(p.endereco.bairro)}${p.endereco.ref?`<br><small>${esc(p.endereco.ref)}</small>`:""}</dd>` : "";
+  const troco = p.troco ? `<dt>Troco</dt><dd>para R$ ${esc(p.troco)}</dd>` : "";
+  let acts="";
+  if(p.status==="novo") acts=`<button class="b go" data-a="aceitar" data-n="${p.numero}">✅ Aceitar e imprimir</button>
+      <button class="b no" data-a="recusar" data-n="${p.numero}">Recusar</button>
+      <a class="b wa" href="${waCliente(p,`Olá ${p.cliente}! Sobre o seu pedido ${nPed(p.numero)} no Point do Pipi:`)}" target="_blank" rel="noopener">💬 Falar</a>`;
+  else if(p.status==="aceito") acts=`<button class="b go" data-a="pronto" data-n="${p.numero}">${ent?"🛵 Saiu para entrega":"🛍️ Pronto para retirar"}</button>
+      <button class="b" data-a="reimprimir" data-n="${p.numero}">🧾 Reimprimir</button>
+      <a class="b wa" href="${waCliente(p,`Oi ${p.cliente}! Seu pedido ${nPed(p.numero)} foi aceito e já está na chapa 🍔🔥 Previsão: ${ent?CFG.tempoEntrega:CFG.tempoRetirada}.`)}" target="_blank" rel="noopener">💬 Avisar aceito</a>`;
+  else if(p.status==="pronto") acts=`<button class="b go" data-a="concluir" data-n="${p.numero}">✔️ Concluir pedido</button>
+      <button class="b" data-a="reimprimir" data-n="${p.numero}">🧾 Reimprimir</button>
+      <a class="b wa" href="${waCliente(p, ent?`Oi ${p.cliente}! Seu pedido ${nPed(p.numero)} saiu para entrega 🛵 Já já chega aí!`:`Oi ${p.cliente}! Seu pedido ${nPed(p.numero)} está pronto para retirar 🍔 Estamos na ${CFG.endereco}.`)}" target="_blank" rel="noopener">💬 Avisar cliente</a>`;
+  else acts=`<button class="b full" data-a="reimprimir" data-n="${p.numero}">🧾 Reimprimir</button>`;
+  return `<article class="ped ${p.status==="novo"?"novo":""}">
+    <div class="ph"><span class="n num">${nPed(p.numero)}</span>
+      <div class="meta"><b>${esc(p.cliente)}</b><span class="num">${hora(p.criadoEm)} · ${foneFmt(p.fone)}${p.status==="recusado"?" · recusado":""}</span></div>
+      <span class="tipo ${ent?"ent":"ret"}">${ent?"Entrega":"Retirada"}</span></div>
+    <div class="pb">
+      <ul class="itens">${p.itens.map(i=>`<li><span><b class="num">${i.qtd}x</b>${esc(i.nome)}</span><span class="num">${brl(i.qtd*i.preco)}</span></li>`).join("")}</ul>
+      ${p.obs?`<div class="obs">⚠️ ${esc(p.obs)}</div>`:""}
+      <dl class="kv">${end}<dt>Pagamento</dt><dd>${esc(p.pagamento)}</dd>${troco}</dl>
+      <div class="total num"><span>Total${p.taxa?` (entrega ${brl(p.taxa)})`:""}</span><span>${brl(p.total)}</span></div>
+    </div>
+    <div class="acts">${acts}</div>
+  </article>`;
+}
+
+function render(){
+  const todos=Store.ler().sort((a,b)=>b.numero-a.numero);
+  const cont=f=>todos.filter(p=>GRUPO[f].includes(p.status)).length;
+  $("#cNovo").textContent=cont("novo"); $("#cAceito").textContent=cont("aceito"); $("#cPronto").textContent=cont("pronto"); $("#cFim").textContent=cont("fim");
+  document.querySelector('.tab[data-f="novo"]').classList.toggle("alerta",cont("novo")>0);
+  const lista = todos.filter(p=>GRUPO[filtro].includes(p.status));
+  if(filtro!=="novo") lista.reverse();
+  $("#list").innerHTML = lista.length ? lista.map(card).join("") :
+    `<p class="vazio">${filtro==="novo"?"Nenhum pedido novo. Quando chegar, toca o alarme e ele aparece aqui.":"Nada por aqui."}</p>`;
+  document.title = (cont("novo")?`(${cont("novo")}) `:"")+"Painel Point do Pipi";
+}
+function checarNovos(){
+  const a=Store.ler(); let chegou=false;
+  for(const p of a) if(!vistos.has(p.numero)){ vistos.add(p.numero); if(p.status==="novo") chegou=true; }
+  if(chegou){ bip(); filtro="novo"; document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.f==="novo")); toast("🔔 Pedido novo!"); }
+  render();
+}
+
+document.addEventListener("click",async e=>{
+  const t=e.target.closest(".tab"); if(t){ filtro=t.dataset.f; document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t)); render(); return; }
+  const b=e.target.closest("[data-a]"); if(!b) return;
+  const n=Number(b.dataset.n), a=b.dataset.a, p=Store.ler().find(x=>x.numero===n); if(!p) return;
+  if(a==="aceitar"){
+    Store.atualizar(n,{status:"aceito",aceitoEm:new Date().toISOString()}); render();
+    try{ await Imp.imprimir(p); toast(`Pedido ${nPed(n)} aceito e enviado para impressão`); }
+    catch(err){ toast("Aceito, mas não imprimiu: "+(err.message||"verifique a impressora")); }
+  }
+  if(a==="reimprimir"){ try{ await Imp.imprimir(p); toast("Reimpressão enviada"); }catch(err){ toast("Não imprimiu: "+(err.message||"verifique a impressora")); } }
+  if(a==="recusar"){
+    if(b.dataset.confirma!=="1"){ b.dataset.confirma="1"; b.textContent="Toque de novo para recusar"; setTimeout(()=>{ b.dataset.confirma=""; b.textContent="Recusar"; },3000); return; }
+    Store.atualizar(n,{status:"recusado"}); render(); toast(`Pedido ${nPed(n)} recusado`);
+  }
+  if(a==="pronto"){ Store.atualizar(n,{status:"pronto"}); filtro="pronto"; document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.f==="pronto")); render(); }
+  if(a==="concluir"){ Store.atualizar(n,{status:"concluido"}); render(); toast(`Pedido ${nPed(n)} concluído`); }
+});
+
+/* simulação para demonstrar */
+const NOMES=["Ana Paula","João Victor","Maria Clara","Pedro Henrique","Larissa","Carlos Eduardo","Bianca","Rafael"];
+const ITENS=[["Pipi Clássico",26.9],["Bacon Lovers",32.9],["Smash Duplo",29.9],["Monstrão",42.9],["Fritas da Casa",18.9],["Fritas Cheddar & Bacon",26.9],["Refrigerante lata",6.5],["Suco natural",9.9]];
+const OBS=["","","Sem cebola, por favor","Ponto da carne bem passado","Molho à parte","Capricha no bacon 😄"];
+$("#btnSim").addEventListener("click",()=>{
+  const r=a=>a[Math.floor(Math.random()*a.length)], ent=Math.random()<.5;
+  const itens=[...new Set([r(ITENS),r(ITENS),r(ITENS)])].map(([nome,preco])=>({nome,preco,qtd:1+Math.floor(Math.random()*2)}));
+  const sub=itens.reduce((s,i)=>s+i.qtd*i.preco,0), taxa=ent?6:0, pag=r(["Pix","Cartão de crédito","Cartão de débito","Dinheiro"]);
+  const a=Store.ler();
+  a.push({numero:Store.numero(),criadoEm:new Date().toISOString(),status:"novo",cliente:r(NOMES),fone:"87999"+String(Math.floor(Math.random()*900000+100000)),tipo:ent?"entrega":"retirada",
+    endereco:ent?{rua:r(["Rua Diomedes Gomes Lopes","Av. Rio Branco","Rua do Comércio","Rua São José"]),numero:String(10+Math.floor(Math.random()*500)),bairro:r(["Centro","São Braz","Borges","Manoela Valadares"]),ref:r(["","Casa de portão azul","Perto da praça"])}:null,
+    itens,obs:r(OBS),subtotal:sub,taxa,total:sub+taxa,pagamento:pag,troco:pag==="Dinheiro"?String(Math.ceil((sub+taxa)/50)*50):""});
+  Store.gravar(a); checarNovos();
+});
+
+/* atualização: outro separador (cardápio) grava → o painel percebe */
+addEventListener("storage",e=>{ if(e.key==="pipi-pedidos") checarNovos(); });
+setInterval(checarNovos,2500);
+setInterval(()=>{ $("#relogio").textContent=new Date().toLocaleString("pt-BR",{weekday:"short",hour:"2-digit",minute:"2-digit"}); },1000);
+$("#relogio").textContent=new Date().toLocaleString("pt-BR",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+status(); render();
+})();
+</script>
+</body>
+</html>

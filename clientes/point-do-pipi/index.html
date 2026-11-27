@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Point do Pipi</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Cardápio digital e pedidos pelo WhatsApp — Point do Pipi">
@@ -142,6 +143,11 @@ input.bad{border-color:var(--tomate)}
 .send{min-height:58px;border-radius:16px;font-size:16.5px;background:#25d366;color:#0b2e17;border-color:#25d366}
 .send:hover{background:#3be07a;border-color:#3be07a}
 .send[aria-disabled="true"]{opacity:.55}
+.okbox{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-block:10px 6px}
+.okbox h3{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:24px;margin:0}
+.okbox p{margin:0;color:var(--papel-2);max-width:34ch}
+.okbox .btn{width:100%}
+.okmark{width:64px;height:64px;border-radius:50%;background:#25d366;color:#0b2e17;display:grid;place-items:center;font-size:34px;font-weight:800}
 .empty{text-align:center;color:var(--papel-2);padding-block:20px}
 footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 10px}
 </style>
@@ -187,6 +193,7 @@ footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 
 <section class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="shTitle">
   <div class="wrap">
     <div class="sh-top"><h2 id="shTitle">Seu pedido</h2><button class="x" id="fechar" type="button" aria-label="Fechar">×</button></div>
+    <div id="checkout" style="display:flex;flex-direction:column;gap:18px">
     <div class="lines" id="lines"></div>
 
     <form id="form" novalidate>
@@ -211,6 +218,7 @@ footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 
       <fieldset style="margin-top:18px">
         <legend>Seus dados</legend>
         <label>Seu nome<input id="cliente" autocomplete="name" placeholder="Como te chamamos?"></label>
+        <label>Seu WhatsApp<input id="fone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(87) 9 9999-9999"></label>
         <label>Forma de pagamento<select id="pag"></select></label>
         <label id="trocoBox" hidden>Troco para quanto?<input id="troco" inputmode="decimal" placeholder="Ex.: 100 (deixe vazio se não precisar)"></label>
         <label>Observações<textarea id="obs" placeholder="Ex.: sem cebola, ponto da carne, molho à parte"></textarea></label>
@@ -223,6 +231,14 @@ footer{color:var(--papel-2);font-size:12px;text-align:center;padding-block:30px 
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Z"/></svg>
       Enviar pedido no WhatsApp</a>
     <p style="margin:0;text-align:center;font-size:12.5px;color:var(--papel-2)">O WhatsApp abre com o pedido já escrito. É só tocar em enviar.</p>
+    </div>
+    <div class="okbox" id="ok" hidden>
+      <div class="okmark" aria-hidden="true">✓</div>
+      <h3 id="okTit">Pedido enviado!</h3>
+      <p id="okTxt">Confirme o envio no WhatsApp. Assim que a loja aceitar, você recebe a confirmação por lá.</p>
+      <a class="btn" id="okWa" target="_blank" rel="noopener">Abrir o WhatsApp de novo</a>
+      <button class="btn main" type="button" id="okNovo">Fazer outro pedido</button>
+    </div>
   </div>
 </section>
 
@@ -402,6 +418,7 @@ const LOJA = {
     const out=[];
     if(!Object.keys(cart).length) out.push("Seu pedido está vazio.");
     if(!$("#cliente").value.trim()) out.push("Coloque seu nome.");
+    if(fone().length<10) out.push("Coloque seu WhatsApp com DDD.");
     if(modo()==="entrega"){
       if(!$("#rua").value.trim()||!$("#numero").value.trim()||!$("#bairro").value.trim()) out.push("Preencha rua, número e bairro para a entrega.");
       if(LOJA.entrega.pedidoMinimo && subtotal()<LOJA.entrega.pedidoMinimo) out.push(`Pedido mínimo para entrega: ${brl(LOJA.entrega.pedidoMinimo)}.`);
@@ -409,10 +426,35 @@ const LOJA = {
     return out;
   }
 
-  function mensagem(){
+  const fone = () => $("#fone").value.replace(/\D/g,"").replace(/^55(?=\d{10,11}$)/,"");
+  const foneFmt = d => d.length===11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length===10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : d;
+
+  /* ---------- registro do pedido ----------
+     Modo demonstração: guarda no próprio aparelho (o painel lê daqui).
+     Na versão com banco, esta função passa a gravar no Supabase. */
+  const PEDIDOS = {
+    proximoNumero(){ let n=0; try{ n=Number(localStorage.getItem("pipi-seq")||0); }catch(e){} n+=1; try{ localStorage.setItem("pipi-seq",String(n)); }catch(e){} return n; },
+    salvar(p){ try{ const a=JSON.parse(localStorage.getItem("pipi-pedidos")||"[]"); a.push(p); localStorage.setItem("pipi-pedidos",JSON.stringify(a.slice(-200))); }catch(e){} }
+  };
+  function montarPedido(numero){
+    return {
+      numero, criadoEm: new Date().toISOString(), status: "novo",
+      cliente: $("#cliente").value.trim(), fone: fone(),
+      tipo: modo(),
+      endereco: modo()==="entrega" ? { rua:$("#rua").value.trim(), numero:$("#numero").value.trim(), bairro:$("#bairro").value.trim(), ref:$("#comp").value.trim() } : null,
+      itens: Object.entries(cart).map(([id,q])=>({ id, nome: byId[id].nome, qtd:q, preco: byId[id].preco })),
+      obs: $("#obs").value.trim(),
+      subtotal: subtotal(), taxa: taxa(), total: subtotal()+taxa(),
+      pagamento: $("#pag").value,
+      troco: $("#pag").value==="Dinheiro" ? $("#troco").value.trim() : ""
+    };
+  }
+
+  function mensagem(numero){
     const L=[];
-    L.push(`*NOVO PEDIDO · ${LOJA.nome}*`,"");
+    L.push(`*NOVO PEDIDO${numero?` #${String(numero).padStart(3,"0")}`:""} · ${LOJA.nome}*`,"");
     L.push(`*Cliente:* ${$("#cliente").value.trim()}`);
+    L.push(`*WhatsApp:* ${foneFmt(fone())}`);
     if(modo()==="entrega"){
       L.push(`*Tipo:* 🛵 Entrega`);
       L.push(`*Endereço:* ${$("#rua").value.trim()}, ${$("#numero").value.trim()} · ${$("#bairro").value.trim()}`);
@@ -453,9 +495,20 @@ const LOJA = {
   function mostrarErro(){
     const p=problemas(); $("#erro").hidden=!p.length; $("#erro").textContent=p.join(" ");
     $("#cliente").classList.toggle("bad",!$("#cliente").value.trim());
+    $("#fone").classList.toggle("bad",fone().length<10);
     ["#rua","#numero","#bairro"].forEach(s=>$(s).classList.toggle("bad",modo()==="entrega"&&!$(s).value.trim()));
   }
-  $("#enviar").addEventListener("click",e=>{ if(problemas().length){ e.preventDefault(); mostrarErro(); } });
+  $("#enviar").addEventListener("click",e=>{
+    if(problemas().length){ e.preventDefault(); mostrarErro(); return; }
+    const n = PEDIDOS.proximoNumero();
+    PEDIDOS.salvar(montarPedido(n));
+    const link = waLink(mensagem(n));
+    $("#enviar").href = link;            // o WhatsApp abre já com o número do pedido
+    $("#okWa").href = link;
+    $("#okTit").textContent = `Pedido #${String(n).padStart(3,"0")} enviado!`;
+    setTimeout(()=>{ cart={}; save(); $("#checkout").style.display="none"; $("#ok").hidden=false; render(); },300);
+  });
+  $("#okNovo").addEventListener("click",()=>{ $("#ok").hidden=true; $("#checkout").style.display="flex"; fechar(); });
   $("#form").addEventListener("input",render);
   $("#form").addEventListener("change",render);
   $("#form").addEventListener("submit",e=>e.preventDefault());
