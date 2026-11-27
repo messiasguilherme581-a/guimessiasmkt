@@ -297,12 +297,14 @@ const LOJA = {
   const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const waLink = txt => "https://wa.me/"+LOJA.whatsapp.replace(/\D/g,"")+"?text="+encodeURIComponent(txt);
+  /* ajustes feitos pela gestão no sistema (preço e esgotado) */
+  try{ const ov=JSON.parse(localStorage.getItem("pipi-cardapio")||"{}"); LOJA.produtos.forEach(p=>{ const o=ov[p.id]; if(o){ if(o.preco>0) p.preco=o.preco; p.esgotado=!!o.esgotado; } }); }catch(e){}
   const byId = Object.fromEntries(LOJA.produtos.map(p=>[p.id,p]));
 
   /* ---------- carrinho (lembrado neste aparelho) ---------- */
   let cart = {};
   try{ cart = JSON.parse(localStorage.getItem("pipi-cart")||"{}") || {}; }catch(e){ cart = {}; }
-  for(const k in cart) if(!byId[k] || !(cart[k]>0)) delete cart[k];
+  for(const k in cart) if(!byId[k] || byId[k].esgotado || !(cart[k]>0)) delete cart[k];
   const save = () => { try{ localStorage.setItem("pipi-cart",JSON.stringify(cart)); }catch(e){} };
 
   /* ---------- topo ---------- */
@@ -316,7 +318,7 @@ const LOJA = {
   $("#maps").href = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(LOJA.endereco);
   $("#insta").href = "https://instagram.com/"+LOJA.instagram;
   $("#info").innerHTML = `<span>📍 ${esc(LOJA.endereco)}</span><span>@${esc(LOJA.instagram)}</span>`;
-  $("#rodape").innerHTML = `${esc(LOJA.nome)} · O melhor da região<br>${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp (87) 99928-3353${LOJA.demo?`<br><br><a href="painel.html" target="_blank" rel="noopener" style="color:var(--cheddar);font-weight:700">Painel da loja (demonstração) →</a>`:""}`;
+  $("#rodape").innerHTML = `${esc(LOJA.nome)} · O melhor da região<br>${esc(LOJA.endereco)}<br>Pedidos pelo WhatsApp (87) 99928-3353${LOJA.demo?`<br><br><a href="sistema.html" target="_blank" rel="noopener" style="color:var(--cheddar);font-weight:700">Sistema da loja (demonstração) →</a>`:""}`;
 
   const hm = $("#heroMedia");
   if(LOJA.heroVideo){
@@ -389,6 +391,7 @@ const LOJA = {
   }).join("");
 
   function ctl(id){
+    if(byId[id].esgotado) return `<span class="tag" style="position:static;background:var(--chapa-3);color:var(--papel-2)">Esgotado</span>`;
     const q = cart[id]||0;
     return q ? `<span class="step"><button type="button" data-d="-1" data-id="${id}" aria-label="Tirar um">−</button><span class="num">${q}</span><button type="button" data-d="1" data-id="${id}" aria-label="Adicionar mais um">+</button></span>`
              : `<button class="add" type="button" data-d="1" data-id="${id}">+ Adicionar</button>`;
